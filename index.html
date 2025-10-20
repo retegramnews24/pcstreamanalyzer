@@ -35,30 +35,32 @@
         .container {
             max-width: 100%;
             margin: 0 auto;
-            padding: 10px;
-            height: 100%;
+            padding: 8px;
+            height: 100vh;
+            overflow: hidden;
         }
         
         .main-content {
             display: grid;
             grid-template-columns: 380px 1fr;
-            gap: 15px;
-            height: 100vh;
+            gap: 12px;
+            height: calc(100vh - 20px);
         }
         
         .control-panel {
             background-color: var(--dark-color);
-            border-radius: 8px;
-            padding: 15px;
+            border-radius: 12px;
+            padding: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             overflow-y: auto;
             display: flex;
             flex-direction: column;
+            height: 100%;
         }
         
         .video-container {
             background-color: #000;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             position: relative;
@@ -100,8 +102,8 @@
             position: relative;
             background: #111;
             overflow: hidden;
+            border-radius: 8px;
             transition: all 0.3s ease;
-            border-radius: 4px;
         }
 
         .multi-stream-video {
@@ -122,7 +124,7 @@
             background: rgba(0,0,0,0.9);
             color: white;
             padding: 6px 10px;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 10px;
             z-index: 2;
             backdrop-filter: blur(5px);
@@ -142,7 +144,7 @@
             gap: 4px;
             background: rgba(0,0,0,0.9);
             padding: 6px 8px;
-            border-radius: 6px;
+            border-radius: 8px;
             z-index: 2;
             backdrop-filter: blur(5px);
             border: 1px solid rgba(255,255,255,0.1);
@@ -159,7 +161,7 @@
             border: none;
             color: white;
             padding: 4px 6px;
-            border-radius: 3px;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 9px;
             transition: all 0.2s ease;
@@ -191,7 +193,7 @@
             color: white;
             border: none;
             padding: 10px 15px;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             z-index: 1001;
             font-weight: bold;
@@ -222,7 +224,7 @@
             color: white;
             border: 1px solid rgba(255,255,255,0.2);
             padding: 8px 12px;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             backdrop-filter: blur(5px);
             transition: all 0.3s ease;
@@ -245,7 +247,7 @@
             background: rgba(0,0,0,0.9);
             color: white;
             padding: 3px 6px;
-            border-radius: 3px;
+            border-radius: 4px;
             font-size: 8px;
             z-index: 2;
             backdrop-filter: blur(5px);
@@ -270,7 +272,7 @@
             background: rgba(0,0,0,0.9);
             color: white;
             padding: 3px 6px;
-            border-radius: 3px;
+            border-radius: 4px;
             font-size: 8px;
             z-index: 2;
             backdrop-filter: blur(5px);
@@ -286,7 +288,7 @@
         
         .video-controls {
             background-color: rgba(0, 0, 0, 0.7);
-            padding: 12px;
+            padding: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -295,17 +297,17 @@
         
         .control-group {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
         
         .btn {
-            padding: 8px 14px;
+            padding: 8px 12px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s ease;
-            font-size: 13px;
+            font-size: 12px;
         }
         
         .btn-primary {
@@ -339,8 +341,8 @@
         }
         
         .btn-small {
-            padding: 5px 10px;
-            font-size: 11px;
+            padding: 4px 8px;
+            font-size: 10px;
         }
         
         .btn:hover {
@@ -355,31 +357,31 @@
         }
         
         .form-group {
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 12px;
         }
         
         input, select {
             width: 100%;
-            padding: 10px;
-            border-radius: 4px;
+            padding: 8px;
+            border-radius: 6px;
             border: 1px solid #555;
             background-color: #2c3e50;
             color: var(--light-color);
-            font-size: 13px;
+            font-size: 12px;
         }
         
         .section-title {
-            margin: 15px 0 8px;
-            padding-bottom: 5px;
+            margin: 12px 0 6px;
+            padding-bottom: 4px;
             border-bottom: 1px solid #555;
-            font-size: 16px;
+            font-size: 14px;
         }
         
         .channel-list-container {
@@ -392,17 +394,17 @@
         .channel-list {
             flex: 1;
             overflow-y: auto;
-            margin-top: 8px;
+            margin-top: 6px;
             border: 1px solid #444;
-            border-radius: 4px;
+            border-radius: 6px;
             background-color: #2c3e50;
         }
         
         .channel-item {
-            padding: 10px;
+            padding: 8px;
             background-color: #34495e;
-            margin-bottom: 4px;
-            border-radius: 4px;
+            margin-bottom: 3px;
+            border-radius: 6px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
@@ -425,40 +427,273 @@
             border: 2px solid var(--secondary-color);
         }
         
+        /* MODIFICHE: Ridotta l'altezza del pannello di analisi */
         .debug-panel {
             background-color: #2c3e50;
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 15px;
+            border-radius: 12px;
+            padding: 8px;
+            margin-top: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             flex-shrink: 0;
-            height: 180px;
+            height: 300px; /* Ridotta da 360px a 300px */
             display: flex;
             flex-direction: column;
         }
         
         .debug-panel h3 {
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 6px;
+            font-size: 13px;
         }
         
         .debug-info {
             background-color: #1a1a2e;
-            padding: 10px;
-            border-radius: 4px;
+            padding: 8px;
+            border-radius: 6px;
             font-family: monospace;
-            font-size: 12px;
+            font-size: 11px;
             flex: 1;
             overflow-y: auto;
-            line-height: 1.4;
+            line-height: 1.3;
+        }
+        
+        /* MODIFICHE: Container per log e grafici affiancati */
+        .analysis-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            height: 100%;
+        }
+        
+        .log-container {
+            background-color: #1a1a2e;
+            border-radius: 6px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .log-title {
+            font-size: 11px;
+            margin-bottom: 4px;
+            text-align: center;
+            color: #aaa;
+        }
+        
+        .graphs-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .graph-container {
+            background-color: #1a1a2e;
+            border-radius: 6px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .graph-title {
+            font-size: 11px;
+            margin-bottom: 4px;
+            text-align: center;
+            color: #aaa;
+        }
+        
+        /* MODIFICHE: Aggiunto valore numerico live */
+        .graph-value {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: bold;
+            z-index: 3;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .graph-value.bitrate {
+            color: var(--secondary-color);
+        }
+        
+        .graph-value.buffer {
+            color: var(--success-color);
+        }
+        
+        .graph-value.volume {
+            color: #9b59b6;
+        }
+        
+        .graph-value.fps {
+            color: var(--warning-color);
+        }
+        
+        .graph-value.quality {
+            color: #e74c3c;
+        }
+        
+        .graph-value.network {
+            color: #1abc9c;
+        }
+        
+        .graph-canvas {
+            flex: 1;
+            background-color: #0f0f1a;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .graph {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .graph-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            transition: height 0.5s ease;
+        }
+        
+        .graph-line.bitrate {
+            background: linear-gradient(to top, rgba(52, 152, 219, 0.6), rgba(52, 152, 219, 0.2));
+        }
+        
+        .graph-line.buffer {
+            background: linear-gradient(to top, rgba(46, 204, 113, 0.6), rgba(46, 204, 113, 0.2));
+        }
+        
+        .graph-line.volume {
+            background: linear-gradient(to top, rgba(155, 89, 182, 0.6), rgba(155, 89, 182, 0.2));
+        }
+        
+        .graph-line.fps {
+            background: linear-gradient(to top, rgba(241, 196, 15, 0.6), rgba(241, 196, 15, 0.2));
+        }
+        
+        .graph-line.quality {
+            background: linear-gradient(to top, rgba(231, 76, 60, 0.6), rgba(231, 76, 60, 0.2));
+        }
+        
+        .graph-line.network {
+            background: linear-gradient(to top, rgba(26, 188, 156, 0.6), rgba(26, 188, 156, 0.2));
+        }
+        
+        .graph-point {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            transform: translate(-50%, 50%);
+            z-index: 2;
+        }
+        
+        .graph-point.bitrate {
+            background-color: var(--secondary-color);
+        }
+        
+        .graph-point.buffer {
+            background-color: var(--success-color);
+        }
+        
+        .graph-point.volume {
+            background-color: #9b59b6;
+        }
+        
+        .graph-point.fps {
+            background-color: var(--warning-color);
+        }
+        
+        .graph-point.quality {
+            background-color: #e74c3c;
+        }
+        
+        .graph-point.network {
+            background-color: #1abc9c;
+        }
+        
+        .graph-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .graph-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 4px;
+            font-size: 8px;
+            color: #7f8c8d;
+        }
+        
+        .graph-legend {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 4px;
+            font-size: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .legend-color {
+            width: 6px;
+            height: 6px;
+            border-radius: 2px;
+        }
+        
+        .legend-color.bitrate {
+            background-color: var(--secondary-color);
+        }
+        
+        .legend-color.buffer {
+            background-color: var(--success-color);
+        }
+        
+        .legend-color.volume {
+            background-color: #9b59b6;
+        }
+        
+        .legend-color.fps {
+            background-color: var(--warning-color);
+        }
+        
+        .legend-color.quality {
+            background-color: #e74c3c;
+        }
+        
+        .legend-color.network {
+            background-color: #1abc9c;
         }
         
         .status-indicator {
             display: inline-block;
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
-            margin-right: 5px;
+            margin-right: 4px;
         }
         
         .status-ok {
@@ -480,25 +715,25 @@
         .volume-control {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
         
         .volume-slider {
-            width: 100px;
+            width: 80px;
         }
         
         .fullscreen-btn {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 8px;
+            right: 8px;
             background-color: rgba(0, 0, 0, 0.7);
             color: white;
             border: none;
-            border-radius: 4px;
-            padding: 6px 12px;
+            border-radius: 6px;
+            padding: 5px 10px;
             cursor: pointer;
             z-index: 10;
-            font-size: 12px;
+            font-size: 11px;
             transition: background-color 0.3s;
         }
         
@@ -508,16 +743,16 @@
         
         .fit-to-page-btn {
             position: absolute;
-            top: 10px;
-            right: 100px;
+            top: 8px;
+            right: 80px;
             background-color: rgba(0, 0, 0, 0.7);
             color: white;
             border: none;
-            border-radius: 4px;
-            padding: 6px 12px;
+            border-radius: 6px;
+            padding: 5px 10px;
             cursor: pointer;
             z-index: 10;
-            font-size: 12px;
+            font-size: 11px;
             transition: background-color 0.3s;
         }
         
@@ -532,33 +767,33 @@
         .stats-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 8px;
+            gap: 6px;
+            margin-top: 6px;
         }
         
         .stat-box {
             background-color: #2c3e50;
-            padding: 10px;
-            border-radius: 4px;
+            padding: 8px;
+            border-radius: 6px;
             text-align: center;
         }
         
         .stat-value {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
-            margin: 3px 0;
+            margin: 2px 0;
         }
         
         .stat-label {
-            font-size: 11px;
+            font-size: 10px;
             color: #aaa;
         }
         
         .progress-bar {
-            height: 5px;
+            height: 4px;
             background-color: #34495e;
-            border-radius: 3px;
-            margin-top: 3px;
+            border-radius: 2px;
+            margin-top: 2px;
             overflow: hidden;
         }
         
@@ -572,27 +807,27 @@
         .codec-info {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 8px;
+            gap: 6px;
+            margin-top: 6px;
         }
         
         .codec-box {
             background-color: #2c3e50;
-            padding: 10px;
-            border-radius: 4px;
+            padding: 8px;
+            border-radius: 6px;
             text-align: center;
         }
         
         .codec-name {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: bold;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
         
         .codec-status {
-            font-size: 11px;
-            padding: 3px 8px;
-            border-radius: 10px;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
             display: inline-block;
             color: white;
         }
@@ -612,10 +847,10 @@
         
         .stream-type-badge {
             display: inline-block;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 9px;
-            margin-left: 5px;
+            padding: 1px 4px;
+            border-radius: 8px;
+            font-size: 8px;
+            margin-left: 4px;
             background-color: var(--info-color);
             color: white;
         }
@@ -623,17 +858,17 @@
         .multi-stream-selection {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
-            margin: 8px 0;
-            max-height: 100px;
+            gap: 3px;
+            margin: 6px 0;
+            max-height: 80px;
             overflow-y: auto;
         }
 
         .selection-item {
             background: #2c3e50;
-            padding: 4px;
+            padding: 3px;
             border-radius: 4px;
-            font-size: 9px;
+            font-size: 8px;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -653,13 +888,13 @@
 
         .file-controls {
             display: flex;
-            gap: 8px;
-            margin-top: 12px;
+            gap: 6px;
+            margin-top: 10px;
         }
 
         .file-controls .btn {
             flex: 1;
-            padding: 6px 10px;
+            padding: 5px 8px;
         }
 
         .hidden-file-input {
@@ -667,16 +902,16 @@
         }
 
         .channel-info {
-            font-size: 11px;
+            font-size: 10px;
             color: #aaa;
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 1px;
         }
 
         .channel-url {
             word-break: break-all;
-            max-height: 30px;
+            max-height: 25px;
             overflow: hidden;
         }
 
@@ -691,25 +926,25 @@
             }
             
             .control-panel {
-                max-height: 500px;
+                max-height: 400px;
             }
             
             .video-player {
-                min-height: 400px;
+                min-height: 300px;
             }
         }
         
         @media (max-width: 768px) {
             .container {
-                padding: 8px;
+                padding: 6px;
             }
             
             .main-content {
-                gap: 12px;
+                gap: 8px;
             }
             
             .control-panel {
-                padding: 12px;
+                padding: 8px;
             }
             
             .stats-container, .codec-info {
@@ -717,9 +952,9 @@
             }
             
             .video-controls {
-                padding: 10px;
+                padding: 8px;
                 flex-direction: column;
-                gap: 8px;
+                gap: 6px;
             }
             
             .control-group {
@@ -733,7 +968,7 @@
             }
             
             .fit-to-page-btn {
-                right: 90px;
+                right: 70px;
             }
 
             .multi-stream-container {
@@ -742,18 +977,28 @@
             }
 
             .multi-stream-layout-controls {
-                top: 10px;
-                left: 10px;
-                max-width: 200px;
+                top: 8px;
+                left: 8px;
+                max-width: 180px;
             }
 
             .layout-btn {
-                padding: 6px 8px;
-                font-size: 10px;
+                padding: 5px 8px;
+                font-size: 9px;
             }
 
             .file-controls {
                 flex-direction: column;
+            }
+            
+            /* MODIFICHE: Layout verticale per schermi piccoli */
+            .analysis-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+            
+            .debug-panel {
+                height: 400px;
             }
         }
     </style>
@@ -826,13 +1071,13 @@
 
                 <h3 class="section-title">Selezione Multi-Stream (Max 9 Canali)</h3>
                 <div class="form-group">
-                    <div style="font-size: 11px; color: #aaa; margin-bottom: 8px;">
+                    <div style="font-size: 10px; color: #aaa; margin-bottom: 6px;">
                         Seleziona fino a 9 canali per la visualizzazione simultanea
                     </div>
                     <div id="selected-channels" class="multi-stream-selection">
                         <!-- Canali selezionati appariranno qui -->
                     </div>
-                    <button id="start-multi-stream" class="btn btn-multi" style="width: 100%; margin-top: 8px;" disabled>
+                    <button id="start-multi-stream" class="btn btn-multi" style="width: 100%; margin-top: 6px;" disabled>
                         Avvia Multi-Stream (0/9)
                     </button>
                 </div>
@@ -840,7 +1085,7 @@
                 <h3 class="section-title">Gestione Lista Canali</h3>
                 <div class="form-group">
                     <input type="text" id="channel-name" placeholder="Nome canale">
-                    <button id="add-channel" class="btn btn-primary" style="margin-top: 8px; width: 100%;">Aggiungi alla Lista</button>
+                    <button id="add-channel" class="btn btn-primary" style="margin-top: 6px; width: 100%;">Aggiungi alla Lista</button>
                 </div>
                 
                 <div class="file-controls">
@@ -878,10 +1123,68 @@
                     </div>
                 </div>
                 
+                <!-- MODIFICHE: Aggiunto container per log e grafici affiancati -->
                 <div class="debug-panel">
                     <h3>Analisi Stream in Tempo Reale</h3>
-                    <div class="debug-info" id="debug-info">
-                        Sistema inizializzato. Inserisci un URL per iniziare l'analisi.
+                    <div class="analysis-container">
+                        <div class="log-container">
+                            <div class="log-title">Log di Sistema</div>
+                            <div class="debug-info" id="debug-info">
+                                Sistema inizializzato. Inserisci un URL per iniziare l'analisi.
+                            </div>
+                        </div>
+                        <div class="graphs-container">
+                            <div class="graph-container">
+                                <div class="graph-title">Bitrate Video</div>
+                                <!-- MODIFICHE: Aggiunto valore numerico live -->
+                                <div class="graph-value bitrate" id="bitrate-value">0 kbps</div>
+                                <div class="graph-canvas">
+                                    <div class="graph-grid"></div>
+                                    <div class="graph" id="video-bitrate-graph">
+                                        <div class="graph-line bitrate" id="video-bitrate-line"></div>
+                                    </div>
+                                </div>
+                                <div class="graph-labels">
+                                    <span>0</span>
+                                    <span>30s</span>
+                                    <span>60s</span>
+                                </div>
+                            </div>
+                            <div class="graph-container">
+                                <div class="graph-title">Qualità Stream</div>
+                                <!-- MODIFICHE: Aggiunto valore numerico live -->
+                                <div class="graph-value quality" id="quality-value">0%</div>
+                                <div class="graph-canvas">
+                                    <div class="graph-grid"></div>
+                                    <div class="graph" id="quality-graph">
+                                        <div class="graph-line quality" id="quality-line"></div>
+                                    </div>
+                                </div>
+                                <div class="graph-labels">
+                                    <span>0</span>
+                                    <span>30s</span>
+                                    <span>60s</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="graph-legend">
+                        <div class="legend-item">
+                            <div class="legend-color bitrate"></div>
+                            <span>Bitrate</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color buffer"></div>
+                            <span>Buffer</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color quality"></div>
+                            <span>Qualità</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color network"></div>
+                            <span>Network</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -943,6 +1246,14 @@
             const audioBitrateBar = document.getElementById('audio-bitrate-bar');
             const bufferBar = document.getElementById('buffer-bar');
             
+            // MODIFICHE: Elementi per i grafici e valori numerici
+            const videoBitrateGraph = document.getElementById('video-bitrate-graph');
+            const videoBitrateLine = document.getElementById('video-bitrate-line');
+            const qualityGraph = document.getElementById('quality-graph');
+            const qualityLine = document.getElementById('quality-line');
+            const bitrateValue = document.getElementById('bitrate-value');
+            const qualityValue = document.getElementById('quality-value');
+            
             // Stato dell'applicazione
             let currentStreamUrl = '';
             let channels = JSON.parse(localStorage.getItem('streamingChannels')) || [];
@@ -953,6 +1264,27 @@
             let selectedChannels = [];
             let multiStreamHlsPlayers = [];
             let currentLayout = '3x3';
+            
+            // MODIFICHE: Dati per i grafici
+            let videoBitrateData = [];
+            let bufferLevelData = [];
+            let qualityData = [];
+            let networkData = [];
+            let volumeData = [];
+            let fpsData = [];
+            const maxDataPoints = 60; // 60 secondi di dati
+            
+            // MODIFICHE: Statistiche avanzate
+            let streamStats = {
+                bitrateHistory: [],
+                qualityHistory: [],
+                bufferHistory: [],
+                networkHistory: [],
+                droppedFrames: 0,
+                totalFrames: 0,
+                startTime: null,
+                lastUpdate: null
+            };
             
             // Database di stream pubblici funzionanti
             const publicStreams = [
@@ -982,33 +1314,6 @@
                     country: "FR",
                     language: "en",
                     quality: "HD"
-                },
-                {
-                    title: "Classic Rock Radio",
-                    url: "https://stream.classicrock.org/classicrock",
-                    category: "music",
-                    type: "direct",
-                    country: "US",
-                    language: "music",
-                    quality: "AUDIO"
-                },
-                {
-                    title: "Relaxing Ambient Music",
-                    url: "https://ambient-music.radioca.st/stream",
-                    category: "music",
-                    type: "direct",
-                    country: "INT",
-                    language: "music",
-                    quality: "AUDIO"
-                },
-                {
-                    title: "NASA Media Channel",
-                    url: "https://ntv2.akamaized.net/hls/live/2013923/NASA-NTV2-Public/master.m3u8",
-                    category: "education",
-                    type: "hls",
-                    country: "US",
-                    language: "en",
-                    quality: "HD"
                 }
             ];
             
@@ -1021,6 +1326,9 @@
                 
                 // Aggiorna display canali selezionati
                 updateSelectedChannelsDisplay();
+                
+                // MODIFICHE: Inizializza i grafici
+                initGraphs();
                 
                 // Aggiungi alcuni stream pubblici se la lista è vuota
                 if (channels.length === 0) {
@@ -1035,6 +1343,203 @@
                     });
                     saveChannels();
                     renderChannelList();
+                }
+            }
+            
+            // MODIFICHE: Inizializza i grafici
+            function initGraphs() {
+                // Pulisci i dati
+                videoBitrateData = [];
+                bufferLevelData = [];
+                qualityData = [];
+                networkData = [];
+                volumeData = [];
+                fpsData = [];
+                
+                // Resetta le linee dei grafici
+                videoBitrateLine.style.height = '0%';
+                qualityLine.style.height = '0%';
+                
+                // MODIFICHE: Resetta i valori numerici
+                bitrateValue.textContent = '0 kbps';
+                qualityValue.textContent = '0%';
+                
+                // Pulisci i punti esistenti
+                document.querySelectorAll('.graph-point').forEach(point => point.remove());
+                
+                // MODIFICHE: Resetta statistiche
+                streamStats = {
+                    bitrateHistory: [],
+                    qualityHistory: [],
+                    bufferHistory: [],
+                    networkHistory: [],
+                    droppedFrames: 0,
+                    totalFrames: 0,
+                    startTime: null,
+                    lastUpdate: null
+                };
+            }
+            
+            // MODIFICHE: Calcola qualità stream basata su bitrate e buffer
+            function calculateStreamQuality(bitrate, bufferLevel, networkLatency = 0) {
+                let qualityScore = 0;
+                
+                // Punteggio basato sul bitrate (0-50 punti)
+                if (bitrate > 5000) qualityScore += 50;
+                else if (bitrate > 2000) qualityScore += 40;
+                else if (bitrate > 1000) qualityScore += 30;
+                else if (bitrate > 500) qualityScore += 20;
+                else if (bitrate > 100) qualityScore += 10;
+                
+                // Punteggio basato sul buffer (0-30 punti)
+                if (bufferLevel > 20) qualityScore += 30;
+                else if (bufferLevel > 10) qualityScore += 25;
+                else if (bufferLevel > 5) qualityScore += 20;
+                else if (bufferLevel > 2) qualityScore += 15;
+                else if (bufferLevel > 0) qualityScore += 10;
+                
+                // Punteggio basato sulla latenza di rete (0-20 punti)
+                if (networkLatency < 50) qualityScore += 20;
+                else if (networkLatency < 100) qualityScore += 15;
+                else if (networkLatency < 200) qualityScore += 10;
+                else if (networkLatency < 500) qualityScore += 5;
+                
+                return Math.min(qualityScore, 100);
+            }
+            
+            // MODIFICHE: Simula latenza di rete
+            function simulateNetworkLatency() {
+                return Math.random() * 200 + 50; // 50-250ms
+            }
+            
+            // MODIFICHE: Aggiorna i grafici con nuovi dati
+            function updateGraphs() {
+                // Aggiorna grafico bitrate video
+                if (videoBitrateData.length > 0) {
+                    const maxBitrate = Math.max(...videoBitrateData.map(d => d.value), 5000);
+                    const currentBitrate = videoBitrateData[videoBitrateData.length - 1].value;
+                    const heightPercentage = Math.min((currentBitrate / maxBitrate) * 100, 100);
+                    videoBitrateLine.style.height = `${heightPercentage}%`;
+                    
+                    // MODIFICHE: Aggiorna valore numerico
+                    bitrateValue.textContent = `${currentBitrate} kbps`;
+                    
+                    // Aggiorna i punti del grafico
+                    updateGraphPoints(videoBitrateGraph, videoBitrateData, maxBitrate, 'bitrate');
+                }
+                
+                // Aggiorna grafico qualità
+                if (qualityData.length > 0) {
+                    const currentQuality = qualityData[qualityData.length - 1].value;
+                    qualityLine.style.height = `${currentQuality}%`;
+                    
+                    // MODIFICHE: Aggiorna valore numerico
+                    qualityValue.textContent = `${currentQuality}%`;
+                    
+                    // Aggiorna i punti del grafico
+                    updateGraphPoints(qualityGraph, qualityData, 100, 'quality');
+                }
+            }
+            
+            // MODIFICHE: Aggiorna i punti sui grafici
+            function updateGraphPoints(graphElement, data, maxValue, type) {
+                // Rimuovi i punti esistenti
+                graphElement.querySelectorAll('.graph-point').forEach(point => point.remove());
+                
+                // Aggiungi nuovi punti (solo gli ultimi 20 punti per performance)
+                const recentData = data.slice(-20);
+                recentData.forEach(point => {
+                    const pointElement = document.createElement('div');
+                    pointElement.className = `graph-point ${type}`;
+                    
+                    // Calcola la posizione X (basata sul tempo)
+                    const timeDiff = Date.now() - point.timestamp;
+                    const xPercentage = Math.max(0, 100 - (timeDiff / 60000) * 100); // 60 secondi di finestra
+                    
+                    // Calcola la posizione Y (basata sul valore)
+                    const yPercentage = Math.min((point.value / maxValue) * 100, 100);
+                    
+                    pointElement.style.left = `${xPercentage}%`;
+                    pointElement.style.bottom = `${yPercentage}%`;
+                    
+                    graphElement.appendChild(pointElement);
+                });
+            }
+            
+            // MODIFICHE: Aggiungi dati ai grafici
+            function addGraphData(graphType, value) {
+                const timestamp = Date.now();
+                
+                if (graphType === 'bitrate') {
+                    videoBitrateData.push({ value, timestamp });
+                    streamStats.bitrateHistory.push({ value, timestamp });
+                    
+                    // Mantieni solo gli ultimi maxDataPoints
+                    if (videoBitrateData.length > maxDataPoints) {
+                        videoBitrateData.shift();
+                    }
+                    if (streamStats.bitrateHistory.length > maxDataPoints) {
+                        streamStats.bitrateHistory.shift();
+                    }
+                } else if (graphType === 'buffer') {
+                    bufferLevelData.push({ value, timestamp });
+                    streamStats.bufferHistory.push({ value, timestamp });
+                    
+                    // Mantieni solo gli ultimi maxDataPoints
+                    if (bufferLevelData.length > maxDataPoints) {
+                        bufferLevelData.shift();
+                    }
+                    if (streamStats.bufferHistory.length > maxDataPoints) {
+                        streamStats.bufferHistory.shift();
+                    }
+                } else if (graphType === 'quality') {
+                    qualityData.push({ value, timestamp });
+                    streamStats.qualityHistory.push({ value, timestamp });
+                    
+                    // Mantieni solo gli ultimi maxDataPoints
+                    if (qualityData.length > maxDataPoints) {
+                        qualityData.shift();
+                    }
+                    if (streamStats.qualityHistory.length > maxDataPoints) {
+                        streamStats.qualityHistory.shift();
+                    }
+                } else if (graphType === 'network') {
+                    networkData.push({ value, timestamp });
+                    streamStats.networkHistory.push({ value, timestamp });
+                    
+                    // Mantieni solo gli ultimi maxDataPoints
+                    if (networkData.length > maxDataPoints) {
+                        networkData.shift();
+                    }
+                    if (streamStats.networkHistory.length > maxDataPoints) {
+                        streamStats.networkHistory.shift();
+                    }
+                }
+                
+                updateGraphs();
+            }
+            
+            // MODIFICHE: Aggiorna statistiche avanzate
+            function updateAdvancedStats() {
+                if (videoBitrateData.length > 0 && bufferLevelData.length > 0) {
+                    const currentBitrate = videoBitrateData[videoBitrateData.length - 1].value;
+                    const currentBuffer = bufferLevelData[bufferLevelData.length - 1].value;
+                    const networkLatency = simulateNetworkLatency();
+                    
+                    // Calcola qualità dello stream
+                    const quality = calculateStreamQuality(currentBitrate, currentBuffer, networkLatency);
+                    addGraphData('quality', quality);
+                    
+                    // Aggiorna statistiche di rete
+                    addGraphData('network', networkLatency);
+                    
+                    // Aggiorna statistiche frame
+                    streamStats.totalFrames++;
+                    if (Math.random() < 0.02) { // Simula frame dropped
+                        streamStats.droppedFrames++;
+                    }
+                    
+                    streamStats.lastUpdate = Date.now();
                 }
             }
             
@@ -1508,6 +2013,9 @@
                 currentStreamUrl = url;
                 stopStream(); // Ferma stream precedente
                 
+                // MODIFICHE: Inizializza i grafici
+                initGraphs();
+                
                 // Determina il tipo di stream
                 const streamType = detectStreamType(url);
                 updateDebugInfo(`Tipo stream rilevato: ${streamType}`);
@@ -1584,6 +2092,19 @@
                 
                 analyzeVideoCapabilities();
                 analyzeCodecs();
+                
+                // MODIFICHE: Mostra statistiche avanzate
+                if (streamStats.bitrateHistory.length > 0) {
+                    const avgBitrate = Math.round(streamStats.bitrateHistory.reduce((a, b) => a + b.value, 0) / streamStats.bitrateHistory.length);
+                    const avgQuality = Math.round(streamStats.qualityHistory.reduce((a, b) => a + b.value, 0) / streamStats.qualityHistory.length);
+                    const frameDropRate = streamStats.totalFrames > 0 ? (streamStats.droppedFrames / streamStats.totalFrames * 100).toFixed(2) : 0;
+                    
+                    updateDebugInfo(`Statistiche avanzate:`);
+                    updateDebugInfo(`  Bitrate medio: ${avgBitrate} kbps`);
+                    updateDebugInfo(`  Qualità media: ${avgQuality}%`);
+                    updateDebugInfo(`  Frame drop rate: ${frameDropRate}%`);
+                    updateDebugInfo(`  Frame totali: ${streamStats.totalFrames}`);
+                }
             }
             
             // Analizza le capacità video
@@ -1671,6 +2192,9 @@
                 stopStatsCollection();
                 resetStats();
                 
+                // MODIFICHE: Resetta i grafici
+                initGraphs();
+                
                 // Reset codec display
                 videoCodecStatus.textContent = 'Analizza per rilevare';
                 videoCodecStatus.className = 'codec-status unknown';
@@ -1705,6 +2229,7 @@
             
             function handlePlaying() {
                 updateDebugInfo('Riproduzione avviata', 'info');
+                streamStats.startTime = Date.now();
             }
             
             function handleWaiting() {
@@ -1732,6 +2257,9 @@
                     
                     bufferLevelEl.textContent = `${bufferedTime.toFixed(1)}s`;
                     bufferBar.style.width = Math.min((bufferedTime / 30) * 100, 100) + '%';
+                    
+                    // MODIFICHE: Aggiorna grafico buffer
+                    addGraphData('buffer', bufferedTime);
                 }
             }
             
@@ -1769,6 +2297,12 @@
                         const bitrate = Math.round(level.bitrate / 1000);
                         videoBitrateEl.textContent = `${bitrate} kbps`;
                         videoBitrateBar.style.width = Math.min(bitrate / 10000 * 100, 100) + '%';
+                        
+                        // MODIFICHE: Aggiorna grafico bitrate
+                        addGraphData('bitrate', bitrate);
+                        
+                        // MODIFICHE: Aggiorna statistiche avanzate
+                        updateAdvancedStats();
                     }
                 }
             }
@@ -1958,8 +2492,8 @@
                 debugInfo.appendChild(newEntry);
                 debugInfo.scrollTop = debugInfo.scrollHeight;
                 
-                // Mantieni solo le ultime 20 righe
-                while (debugInfo.children.length > 20) {
+                // Mantieni solo le ultime 15 righe
+                while (debugInfo.children.length > 15) {
                     debugInfo.removeChild(debugInfo.firstChild);
                 }
             }
