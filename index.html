@@ -1,850 +1,1972 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <title>RetegrApp v2.0</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <style>
-    html, body { height: 100%; margin: 0; overflow: hidden; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Multi-Stream Audio</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #17a2b8;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #1a1a2e;
+            color: var(--light-color);
+            line-height: 1.6;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+            height: 100%;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 15px;
+            height: 100vh;
+        }
+        
+        .control-panel {
+            background-color: var(--dark-color);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .video-container {
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .video-player {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            flex: 1;
+            min-height: 0;
+            object-fit: contain;
+        }
 
-    body {
-      display: flex; justify-content: center; align-items: center;
-      font-family: Arial, sans-serif;
-      background: url('https://hd2.tudocdn.net/897898?w=980&h=431') no-repeat center center fixed;
-      background-size: cover;
-      color: #fff;
-    }
+        .video-player.fit-to-page {
+            object-fit: cover;
+        }
 
-    #app {
-      width: 98%; height: 93vh;
-      display: flex; flex-direction: column;
-      background: rgba(0,0,0,0.7); 
-      backdrop-filter: blur(10px);
-      position: relative;
-      border-radius: 12px;
-      overflow: hidden;
-    }
+        /* Multi-Stream Layout */
+        .multi-stream-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 1000;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            padding: 2px;
+        }
 
-    .view {
-      flex: 1; display: none; flex-direction: column; gap: 8px;
-      overflow-y: auto; padding: 8px;
-      position: relative;
-    }
+        .multi-stream-item {
+            position: relative;
+            background: #111;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
 
-    #menu { display: none; justify-content: center; align-items: center; flex-direction: column; }
+        .multi-stream-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: all 0.3s ease;
+        }
 
-    #menuIcon {
-      width: 110px; height: 110px;
-      background: url('https://hd2.tudocdn.net/897898?w=980&h=431') center/cover no-repeat;
-      border-radius: 50%;
-      display: flex; justify-content: center; align-items: center;
-      color: #ffeb3b; font-size: 1.4em; font-weight: bold;
-      text-shadow: 0 0 8px rgba(0,0,0,0.8);
-      margin-bottom: 15px; border: 2px solid #81d4fa;
-    }
+        .multi-stream-item.fit-to-screen .multi-stream-video {
+            object-fit: cover;
+        }
 
-    .btn {
-      padding: 15px 20px; font-size: 1.2em; border: none; border-radius: 10px;
-      cursor: pointer; font-weight: 600; color: #fff;
-      margin: 8px 0; width: 90%; max-width: none;
-      transition: transform 0.2s, box-shadow 0.3s;
-    }
+        .multi-stream-overlay {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            z-index: 2;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+            max-width: calc(100% - 16px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.4); }
+        .multi-stream-controls {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4px;
+            background: rgba(0,0,0,0.9);
+            padding: 6px 8px;
+            border-radius: 6px;
+            z-index: 2;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
 
-    .btn-start { background: linear-gradient(45deg,#43a047,#66bb6a,#1de9b6); }
-    .btn-about { background: linear-gradient(45deg,#fbc02d,#ffeb3b,#ff9800); color:#000; }
-    .btn-restart { background: linear-gradient(45deg,#e53935,#ff1744,#ff5252); }
-    .btn-antistress { background: linear-gradient(45deg,#7b1fa2,#ab47bc,#ce93d8); }
+        .multi-stream-item:hover .multi-stream-controls {
+            opacity: 1;
+        }
 
-    h2 { color: #ffeb3b; margin: 6px 0; text-align: center; font-size: 1.5em; }
-    h3 { color: #81d4fa; margin: 5px 0; font-size: 1.1em; }
+        .multi-stream-btn {
+            background: var(--secondary-color);
+            border: none;
+            color: white;
+            padding: 4px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 9px;
+            transition: all 0.2s ease;
+            min-width: 30px;
+        }
 
-    #versionInfo { margin-top: 15px; font-size: 0.9em; color: #ccc; text-align: center; }
+        .multi-stream-btn:hover {
+            background: var(--primary-color);
+            transform: translateY(-1px);
+        }
 
-    .datetime {
-      position: absolute; bottom: 6px; right: 6px;
-      font-size: 0.8em; color: #ccc;
-    }
+        .multi-stream-btn.active {
+            background: var(--success-color);
+        }
 
-    #intro {
-      position: fixed; inset: 0; display: flex; justify-content: center; align-items: center;
-      background: rgba(0,0,0,0.9); z-index: 10; opacity: 1; transition: opacity 600ms ease;
-    }
-    #intro.hide { opacity: 0; pointer-events: none; }
-    #introTitle {
-      font-size: clamp(2rem, 8vw, 4rem);
-      font-weight: 700; letter-spacing: 0.08em; color: #ffeb3b;
-    }
+        .multi-stream-btn.danger {
+            background: var(--danger-color);
+        }
 
-    /* NOTIZIE */
-    #news { justify-content: flex-start; }
-    #news h2 { margin: 4px 0; font-size: 1.4em; }
-    .news-section {
-      background: rgba(255,255,255,0.1); border-radius: 8px;
-      padding: 10px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.2);
-    }
-    #newsContainer { font-size: 0.9em; }
-    #btnBackNews { align-self: center; margin: 8px auto; width: 80%; }
+        .multi-stream-btn.warning {
+            background: var(--warning-color);
+        }
 
-    /* ABOUT */
-    #about { 
-      justify-content: center; align-items: center; text-align: center;
-      gap: 12px;
-    }
-    #about h2 { font-size: 1.8em; margin-bottom: 12px; }
-    #about p { 
-      font-size: 1.2em; margin: 10px 0; font-weight: 500;
-      background: rgba(255,255,255,0.1); padding: 12px;
-      border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
-    }
-    #about a { 
-      color: #81d4fa; font-weight: 600; font-size: 1.2em;
-      text-shadow: 0 0 10px rgba(129, 212, 250, 0.5);
-    }
+        .exit-multi-stream {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1001;
+            font-weight: bold;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
 
-    /* MODAL ANTISTRESS */
-    #antistressModal {
-      display: none; position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%; background: rgba(0,0,0,0.7);
-      z-index: 20; justify-content: center; align-items: center;
-    }
+        .exit-multi-stream:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
 
-    #antistressContent {
-      background: #fff; border-radius: 12px; padding: 6px;
-      width: 95%; height: 90vh; position: relative;
-      display: flex; flex-direction: column;
-    }
+        .multi-stream-layout-controls {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            display: flex;
+            gap: 8px;
+            z-index: 1001;
+            flex-wrap: wrap;
+            max-width: 300px;
+        }
 
-    #closeModal {
-      position: absolute; top: 6px; right: 6px;
-      background: #e53935; color: #fff; border: none;
-      border-radius: 6px; padding: 5px 8px; cursor: pointer;
-      font-size: 0.8em; z-index: 21;
-    }
+        .layout-btn {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            font-size: 11px;
+        }
 
-    #themeBtn {
-      position: absolute; top: 6px; left: 6px;
-      background: #0288d1; color: #fff; border: none;
-      border-radius: 6px; padding: 5px 8px; cursor: pointer;
-      font-size: 0.8em; z-index: 21;
-    }
+        .layout-btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
 
-    /* GIOCO CONNETTI NUMERI - CORRETTO */
-    #numberConnectContainer {
-      display: flex; flex-direction: column; align-items: center;
-      background: linear-gradient(to bottom, #e0f7fa, #f0f0f0);
-      padding: 4px; border-radius: 8px;
-      transition: background 0.3s, color 0.3s;
-      position: relative; width: 100%; height: 100%;
-      overflow: hidden;
-      justify-content: space-between;
-    }
+        .layout-btn.active {
+            background: var(--success-color);
+        }
 
-    #numberConnectContainer.dark {
-      background: linear-gradient(to bottom, #1e1e1e, #424242);
-      color: #fff;
-    }
+        .stream-status {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 8px;
+            z-index: 2;
+            backdrop-filter: blur(5px);
+        }
 
-    #numberConnectContainer h1 {
-      margin: 4px 0 2px; font-size: 1.6em;
-      color: #00796b; text-align: center; width: 100%;
-    }
+        .status-live {
+            background: var(--success-color);
+        }
 
-    #numberConnectContainer.dark h1 { color: #4fc3f7; }
+        .status-buffering {
+            background: var(--warning-color);
+        }
 
-    #numberConnectContainer #asciiArt {
-      font-family: monospace; color: #444; margin-bottom: 4px;
-      font-size: 0.8em; text-align: center; line-height: 1.1;
-    }
+        .status-error {
+            background: var(--danger-color);
+        }
 
-    #numberConnectContainer.dark #asciiArt { color: #ccc; }
+        .stream-audio-indicator {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 8px;
+            z-index: 2;
+            backdrop-filter: blur(5px);
+        }
 
-    #numberConnectContainer #controls {
-      background: #ffffff; border-radius: 8px; padding: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 4px;
-      width: 90%; text-align: center;
-    }
+        .audio-on {
+            background: var(--info-color);
+        }
 
-    #numberConnectContainer.dark #controls {
-      background: #333; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
+        .audio-off {
+            background: #7f8c8d;
+        }
+        
+        .video-controls {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-info {
+            background-color: var(--info-color);
+            color: white;
+        }
 
-    #numberConnectContainer #controls label {
-      font-weight: bold; margin-right: 6px; font-size: 1em;
-    }
+        .btn-multi {
+            background: linear-gradient(45deg, #3498db, #9b59b6);
+            color: white;
+        }
+        
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 11px;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background-color: #2c3e50;
+            color: var(--light-color);
+            font-size: 13px;
+        }
+        
+        .section-title {
+            margin: 15px 0 8px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #555;
+            font-size: 16px;
+        }
+        
+        .channel-list-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        
+        .channel-list {
+            flex: 1;
+            overflow-y: auto;
+            margin-top: 8px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #2c3e50;
+        }
+        
+        .channel-item {
+            padding: 10px;
+            background-color: #34495e;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .channel-item:hover {
+            background-color: #3d566e;
+            border-left-color: var(--secondary-color);
+        }
+        
+        .channel-item.active {
+            background-color: var(--secondary-color);
+        }
 
-    #numberConnectContainer.dark #controls label { color: #fff; }
+        .channel-item.selected {
+            background: linear-gradient(45deg, #34495e, #3498db);
+            border: 2px solid var(--secondary-color);
+        }
+        
+        .debug-panel {
+            background-color: #2c3e50;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .debug-panel h3 {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .debug-info {
+            background-color: #1a1a2e;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            flex: 1;
+            overflow-y: auto;
+            line-height: 1.4;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-ok {
+            background-color: var(--success-color);
+        }
+        
+        .status-error {
+            background-color: var(--danger-color);
+        }
+        
+        .status-warning {
+            background-color: var(--warning-color);
+        }
+        
+        .status-info {
+            background-color: var(--info-color);
+        }
+        
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .volume-slider {
+            width: 100px;
+        }
+        
+        .fullscreen-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            z-index: 10;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+        
+        .fullscreen-btn:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+        
+        .fit-to-page-btn {
+            position: absolute;
+            top: 10px;
+            right: 100px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            z-index: 10;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+        
+        .fit-to-page-btn:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+        
+        .fit-to-page-btn.active {
+            background-color: var(--secondary-color);
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .stat-box {
+            background-color: #2c3e50;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 3px 0;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #aaa;
+        }
+        
+        .progress-bar {
+            height: 5px;
+            background-color: #34495e;
+            border-radius: 3px;
+            margin-top: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--secondary-color);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .codec-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .codec-box {
+            background-color: #2c3e50;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .codec-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .codec-status {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            display: inline-block;
+            color: white;
+        }
+        
+        .supported {
+            background-color: var(--success-color);
+        }
+        
+        .unsupported {
+            background-color: var(--danger-color);
+        }
+        
+        .unknown {
+            background-color: #7f8c8d;
+            color: #ecf0f1;
+        }
+        
+        .stream-type-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 9px;
+            margin-left: 5px;
+            background-color: var(--info-color);
+            color: white;
+        }
 
-    #numberConnectContainer #controls select {
-      padding: 3px 6px; font-size: 0.9em; border-radius: 4px;
-      border: 1px solid #ccc;
-    }
+        .multi-stream-selection {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            margin: 8px 0;
+            max-height: 100px;
+            overflow-y: auto;
+        }
 
-    #numberConnectContainer.dark #controls select { 
-      border-color: #666; background: #424242; color: #fff; 
-    }
+        .selection-item {
+            background: #2c3e50;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 9px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-    #numberConnectContainer #startBtn {
-      margin-top: 6px; padding: 6px 12px; font-size: 0.9em;
-      background: #00796b; color: white; border: none;
-      border-radius: 4px; cursor: pointer;
-    }
+        .selection-item.selected {
+            background: var(--success-color);
+            color: white;
+        }
 
-    #numberConnectContainer.dark #startBtn { background: #0288d1; }
-    #numberConnectContainer #startBtn:hover { background: #004d40; }
-    #numberConnectContainer.dark #startBtn:hover { background: #039be5; }
+        .selection-item:hover {
+            background: var(--secondary-color);
+        }
 
-    #numberConnectContainer #scoreboard {
-      margin-bottom: 4px; font-weight: bold; font-size: 1.1em;
-      color: #004d40;
-    }
+        .file-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
 
-    #numberConnectContainer.dark #scoreboard { color: #4fc3f7; }
+        .file-controls .btn {
+            flex: 1;
+            padding: 6px 10px;
+        }
 
-    #numberConnectContainer #gameMessage {
-      margin-top: 4px; font-weight: bold; font-size: 1em;
-      color: #d32f2f; min-height: 18px;
-    }
+        .hidden-file-input {
+            display: none;
+        }
 
-    #numberConnectContainer.dark #gameMessage { color: #ef5350; }
+        .channel-info {
+            font-size: 11px;
+            color: #aaa;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
 
-    #numberConnectContainer #grid {
-      display: grid; grid-template-columns: repeat(5, 1fr);
-      grid-template-rows: repeat(6, 1fr); gap: 2px;
-      width: 100%; aspect-ratio: 5 / 6; max-height: 50vh;
-      margin: 4px auto; touch-action: none;
-    }
+        .channel-url {
+            word-break: break-all;
+            max-height: 30px;
+            overflow: hidden;
+        }
 
-    #numberConnectContainer .cell {
-      display: flex; align-items: center; justify-content: center;
-      font-weight: bold; border-radius: 6px; cursor: pointer;
-      user-select: none; transition: all 0.3s ease;
-      background: #b2dfdb; color: #004d40;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      font-size: 1em;
-    }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .control-panel {
+                max-height: 500px;
+            }
+            
+            .video-player {
+                min-height: 400px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 8px;
+            }
+            
+            .main-content {
+                gap: 12px;
+            }
+            
+            .control-panel {
+                padding: 12px;
+            }
+            
+            .stats-container, .codec-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .video-controls {
+                padding: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .control-group {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .volume-control {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .fit-to-page-btn {
+                right: 90px;
+            }
 
-    #numberConnectContainer.dark .cell {
-      background: #616161; color: #fff;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-    }
+            .multi-stream-container {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(5, 1fr);
+            }
 
-    #numberConnectContainer .cell:hover {
-      transform: scale(1.05); box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
+            .multi-stream-layout-controls {
+                top: 10px;
+                left: 10px;
+                max-width: 200px;
+            }
 
-    #numberConnectContainer .cell.selected {
-      outline: 2px solid #00796b;
-      box-shadow: 0 0 8px rgba(0,121,107,0.5);
-    }
+            .layout-btn {
+                padding: 6px 8px;
+                font-size: 10px;
+            }
 
-    #numberConnectContainer.dark .cell.selected {
-      outline: 2px solid #4fc3f7;
-      box-shadow: 0 0 8px rgba(79,195,247,0.5);
-    }
-
-    #numberConnectContainer .cell.pulse {
-      animation: pulse 0.3s ease;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-      100% { transform: scale(1); }
-    }
-
-    /* PULSANTI AGGIUNTI */
-    #gameActions {
-      display: flex; justify-content: center; gap: 6px;
-      margin-top: 6px; width: 90%;
-    }
-
-    .action-btn {
-      padding: 6px 10px; font-size: 0.8em; border: none;
-      border-radius: 4px; cursor: pointer; font-weight: 600;
-      color: #fff; transition: all 0.3s ease; flex: 1;
-      max-width: 90px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
-    .action-btn:hover {
-      transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    }
-
-    #saveBtn { background: #4caf50; }
-    #loadBtn { background: #2196f3; }
-  </style>
+            .file-controls {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div id="intro"><div id="introTitle">RetegrApp</div></div>
+    <div class="container">
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="form-group">
+                    <label for="stream-url">URL del Feed Streaming</label>
+                    <input type="text" id="stream-url" placeholder="Inserisci l'URL del feed streaming">
+                </div>
+                
+                <div class="form-group">
+                    <label for="stream-type">Tipo Stream</label>
+                    <select id="stream-type">
+                        <option value="auto">Rilevamento Automatico</option>
+                        <option value="hls">HLS (.m3u8)</option>
+                        <option value="mp4">MP4 Direct</option>
+                        <option value="webm">WebM Direct</option>
+                    </select>
+                </div>
+                
+                <!-- Codec Info -->
+                <div class="codec-info">
+                    <div class="codec-box">
+                        <div class="codec-name">Codec Video</div>
+                        <span id="video-codec-status" class="codec-status unknown">Analizza per rilevare</span>
+                    </div>
+                    <div class="codec-box">
+                        <div class="codec-name">Codec Audio</div>
+                        <span id="audio-codec-status" class="codec-status unknown">Analizza per rilevare</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <button id="play-btn" class="btn btn-success">Play</button>
+                    <button id="stop-btn" class="btn btn-danger">Stop</button>
+                    <button id="analyze-btn" class="btn btn-info">Analizza</button>
+                </div>
 
-  <div id="app">
-    <div id="menu" class="view">
-      <div id="menuIcon">RetegrApp</div>
-      <button class="btn btn-start" id="btnStart">▶️ AVVIA</button>
-      <button class="btn btn-about" id="btnAbout">ℹ️ INFORMAZIONI</button>
-      <button class="btn btn-antistress" id="btnAntistress">🧘 GIOCO ANTISTRESS</button>
-      <button class="btn btn-restart" id="btnRestart">🔄 RIAVVIA</button>
-      <div id="versionInfo">Versione: 2.0</div>
-      <div class="datetime" id="menuDatetime"></div>
-    </div>
+                <!-- Stats Container -->
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <div class="stat-label">Risoluzione</div>
+                        <div class="stat-value" id="video-resolution">0x0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Bitrate Video</div>
+                        <div class="stat-value" id="video-bitrate">0 kbps</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="video-bitrate-bar"></div>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Bitrate Audio</div>
+                        <div class="stat-value" id="audio-bitrate">0 kbps</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="audio-bitrate-bar"></div>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Buffer</div>
+                        <div class="stat-value" id="buffer-level">0s</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="buffer-bar"></div>
+                        </div>
+                    </div>
+                </div>
 
-    <div id="news" class="view">
-      <h2>📰 ULTIME NOTIZIE</h2>
-      <div id="newsContainer"></div>
-      <button class="btn btn-restart" id="btnBackNews">🔙 TORNA AL MENU</button>
-      <div class="datetime" id="newsDatetime"></div>
-    </div>
-
-    <div id="about" class="view">
-      <h2>ℹ️ INFORMAZIONI</h2>
-      <p>RetegrApp — versione 2.0</p>
-      <p>🔗 Canale Telegram:<br><a href="https://t.me/retegramnews" target="_blank">@retegramnews</a></p>
-      <button class="btn btn-restart" id="btnBack2">🔙 TORNA AL MENU</button>
-      <div class="datetime" id="aboutDatetime"></div>
-    </div>
-
-    <div id="antistressModal">
-      <div id="antistressContent">
-        <button id="closeModal">✖️ CHIUDI</button>
-        <button id="themeBtn">🌗 CAMBIA TEMA</button>
-        <div id="numberConnectContainer">
-          <h1>🎮 CONNETTI I NUMERI</h1>
-          <div id="asciiArt">
-            ═══════════════════════════<br>
-            🔢 CONNETTI I NUMERI<br>
-            🎯 BATTI IL TUO RECORD<br>
-            ═══════════════════════════
-          </div>
-          <div id="controls">
-            <label for="difficulty">SELEZIONA LIVELLO:</label>
-            <select id="difficulty">
-              <option value="easy">🐣 FACILE</option>
-              <option value="medium">🧩 MEDIO</option>
-              <option value="hard">🔥 DIFFICILE</option>
-            </select>
-            <br>
-            <button id="startBtn">▶️ INIZIA PARTITA</button>
-          </div>
-          <div id="scoreboard">🎯 PUNTEGGIO: <span id="score">0</span></div>
-          <div id="grid"></div>
-          <div id="gameMessage"></div>
-          <div id="gameActions">
-            <button class="action-btn" id="saveBtn">💾 SALVA</button>
-            <button class="action-btn" id="loadBtn">📂 CARICA</button>
-          </div>
-          <div class="datetime" id="modalDatetime"></div>
+                <h3 class="section-title">Selezione Multi-Stream (Max 9 Canali)</h3>
+                <div class="form-group">
+                    <div style="font-size: 11px; color: #aaa; margin-bottom: 8px;">
+                        Seleziona fino a 9 canali per la visualizzazione simultanea
+                    </div>
+                    <div id="selected-channels" class="multi-stream-selection">
+                        <!-- Canali selezionati appariranno qui -->
+                    </div>
+                    <button id="start-multi-stream" class="btn btn-multi" style="width: 100%; margin-top: 8px;" disabled>
+                        Avvia Multi-Stream (0/9)
+                    </button>
+                </div>
+                
+                <h3 class="section-title">Gestione Lista Canali</h3>
+                <div class="form-group">
+                    <input type="text" id="channel-name" placeholder="Nome canale">
+                    <button id="add-channel" class="btn btn-primary" style="margin-top: 8px; width: 100%;">Aggiungi alla Lista</button>
+                </div>
+                
+                <div class="file-controls">
+                    <button id="save-channels" class="btn btn-success">Salva Lista</button>
+                    <button id="load-channels" class="btn btn-warning">Carica Lista</button>
+                    <input type="file" id="file-input" class="hidden-file-input" accept=".txt">
+                </div>
+                
+                <div class="channel-list-container">
+                    <h3 class="section-title">Lista Canali Salvati</h3>
+                    <div class="channel-list" id="channel-list">
+                        <!-- I canali verranno aggiunti qui dinamicamente -->
+                    </div>
+                </div>
+                
+                <h3 class="section-title">Ricerca Canali</h3>
+                <div class="form-group">
+                    <input type="text" id="search-channels" placeholder="Cerca nei canali salvati">
+                </div>
+            </div>
+            
+            <div class="video-container">
+                <button id="fit-to-page-btn" class="fit-to-page-btn" title="Adatta alla pagina">Fit to Page</button>
+                <button id="fullscreen-btn" class="fullscreen-btn" title="Schermo intero">Schermo Intero</button>
+                <video id="video-player" class="video-player" controls crossorigin="anonymous"></video>
+                <div class="video-controls">
+                    <div class="control-group">
+                        <button id="video-play" class="btn btn-primary">Play</button>
+                        <button id="video-pause" class="btn btn-warning">Pausa</button>
+                        <button id="video-stop" class="btn btn-danger">Stop</button>
+                    </div>
+                    <div class="volume-control">
+                        <span>🔊</span>
+                        <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="50">
+                    </div>
+                </div>
+                
+                <div class="debug-panel">
+                    <h3>Analisi Stream in Tempo Reale</h3>
+                    <div class="debug-info" id="debug-info">
+                        Sistema inizializzato. Inserisci un URL per iniziare l'analisi.
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <script>
-    const menu = document.getElementById('menu');
-    const news = document.getElementById('news');
-    const about = document.getElementById('about');
-    const newsContainer = document.getElementById('newsContainer');
-    const antistressModal = document.getElementById('antistressModal');
-    const btnAntistress = document.getElementById('btnAntistress');
-    const closeModal = document.getElementById('closeModal');
-    const themeBtn = document.getElementById('themeBtn');
-    const numberConnectContainer = document.getElementById('numberConnectContainer');
+    <!-- Multi-Stream Container 9 Canali -->
+    <div class="multi-stream-container" id="multi-stream-container">
+        <button class="exit-multi-stream" id="exit-multi-stream">Esci Multi-Stream</button>
+        <div class="multi-stream-layout-controls">
+            <button class="layout-btn active" data-layout="3x3">3×3</button>
+            <button class="layout-btn" data-layout="2x2">2×2</button>
+            <button class="layout-btn" data-layout="1x1">1×1</button>
+            <button class="layout-btn" data-layout="fit-all">Fit All</button>
+            <button class="layout-btn" data-layout="mute-all">Muta Tutti</button>
+        </div>
+        <!-- I 9 video verranno aggiunti qui dinamicamente -->
+    </div>
 
-    function toggleTheme() {
-      const isDark = numberConnectContainer.classList.toggle('dark');
-      localStorage.setItem('antistressTheme', isDark ? 'dark' : 'light');
-      themeBtn.textContent = isDark ? '☀️ CHIARO' : '🌙 SCURO';
-    }
-
-    if (localStorage.getItem('antistressTheme') === 'dark') {
-      numberConnectContainer.classList.add('dark');
-      themeBtn.textContent = '☀️ CHIARO';
-    } else {
-      themeBtn.textContent = '🌙 SCURO';
-    }
-
-    themeBtn.addEventListener('click', toggleTheme);
-
-    function updateDatetime() {
-      const now = new Date();
-      const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false };
-      const datetimeStr = now.toLocaleString('it-IT', options).replace(',', '');
-      document.querySelectorAll('.datetime').forEach(el => el.textContent = datetimeStr);
-    }
-    updateDatetime();
-    setInterval(updateDatetime, 60000);
-
-    const intro = document.getElementById("intro");
-    const introTitle = document.getElementById("introTitle");
-    const text = "RetegrApp";
-    const chars = "!<>-_\\/[]{}—=+*^?#________";
-    let frame = 0;
-    let queue = [];
-
-    function randomChar() { return chars[Math.floor(Math.random() * chars.length)]; }
-
-    function scramble(newText) {
-      queue = [];
-      for (let i = 0; i < newText.length; i++) {
-        queue.push({
-          from: text[i] || "",
-          to: newText[i],
-          start: Math.floor(Math.random() * 34),
-          end: Math.floor(Math.random() * 34) + 68
-        });
-      }
-      frame = 0;
-      update();
-    }
-
-    function update() {
-      let output = "";
-      let complete = 0;
-      for (let i = 0; i < queue.length; i++) {
-        let { from, to, start, end, char } = queue[i];
-        if (frame >= end) {
-          complete++;
-          output += to;
-        } else if (frame >= start) {
-          if (!char || Math.random() < 0.28) {
-            char = randomChar();
-            queue[i].char = char;
-          }
-          output += `<span style="color:#81d4fa">${char}</span>`;
-        } else {
-          output += from;
-        }
-      }
-      introTitle.innerHTML = output;
-      if (complete === queue.length) {
-        setTimeout(() => {
-          intro.classList.add("hide");
-          setTimeout(() => {
-            intro.style.display = "none";
-            menu.style.display = "flex";
-          }, 600);
-        }, 1500);
-      } else {
-        frame++;
-        setTimeout(update, 17);
-      }
-    }
-    scramble(text);
-
-    document.getElementById('btnStart').addEventListener('click', () => {
-      menu.style.display = 'none';
-      news.style.display = 'flex';
-      loadNews();
-    });
-    document.getElementById('btnAbout').addEventListener('click', () => {
-      menu.style.display = 'none'; about.style.display = 'flex';
-    });
-    document.getElementById('btnRestart').addEventListener('click', () => {
-      location.reload();
-    });
-    document.getElementById('btnBackNews').addEventListener('click', () => {
-      news.style.display = 'none'; menu.style.display = 'flex';
-    });
-    document.getElementById('btnBack2').addEventListener('click', () => {
-      about.style.display = 'none'; menu.style.display = 'flex';
-    });
-
-    btnAntistress.addEventListener('click', () => {
-      antistressModal.style.display = 'flex';
-      initializeNumberConnect();
-    });
-    closeModal.addEventListener('click', () => {
-      antistressModal.style.display = 'none';
-    });
-
-    // GIOCO CONNETTI NUMERI - VERSIONE CORRETTA E FUNZIONANTE
-    function initializeNumberConnect() {
-      const grid = document.getElementById('grid');
-      const difficultySelect = document.getElementById('difficulty');
-      const startBtn = document.getElementById('startBtn');
-      const scoreEl = document.getElementById('score');
-      const gameMessage = document.getElementById('gameMessage');
-      const saveBtn = document.getElementById('saveBtn');
-      const loadBtn = document.getElementById('loadBtn');
-      
-      const rows = 6, cols = 5;
-      let cells = [], selected = [], colorMap = {};
-      let score = 0, lastMergeTime = 0;
-      let isSelecting = false;
-
-      function getRange() {
-        switch (difficultySelect.value) {
-          case 'easy': return 4;
-          case 'medium': return 6;
-          case 'hard': return 9;
-        }
-      }
-
-      function generateNumber() {
-        return Math.pow(2, Math.floor(Math.random() * getRange()) + 1);
-      }
-
-      function getColorForNumber(n) {
-        if (!colorMap[n]) {
-          const hue = (Object.keys(colorMap).length * 47) % 360;
-          colorMap[n] = `hsl(${hue}, 70%, 85%)`;
-        }
-        return colorMap[n];
-      }
-
-      function createGrid() {
-        grid.innerHTML = '';
-        cells = [];
-        selected = [];
-        colorMap = {};
-        score = 0;
-        updateScore();
-        gameMessage.textContent = '';
-        
-        for (let y = 0; y < rows; y++) {
-          for (let x = 0; x < cols; x++) {
-            const div = document.createElement('div');
-            div.className = 'cell';
-            div.dataset.x = x;
-            div.dataset.y = y;
-            const num = generateNumber();
-            div.textContent = num;
-            div.style.background = getColorForNumber(num);
-            grid.appendChild(div);
-            cells.push(div);
-          }
-        }
-      }
-
-      function getCell(x, y) {
-        return cells.find(c => parseInt(c.dataset.x) === x && parseInt(c.dataset.y) === y);
-      }
-
-      function areAdjacent(c1, c2) {
-        const x1 = parseInt(c1.dataset.x), y1 = parseInt(c1.dataset.y);
-        const x2 = parseInt(c2.dataset.x), y2 = parseInt(c2.dataset.y);
-        const dx = Math.abs(x1 - x2);
-        const dy = Math.abs(y1 - y2);
-        return dx <= 1 && dy <= 1 && (dx + dy > 0);
-      }
-
-      function addToSelection(cell) {
-        if (selected.length >= 2 || !cell.textContent) return;
-        if (selected.length === 1 && !areAdjacent(selected[0], cell)) return;
-        if (selected.length === 1 && selected[0].textContent !== cell.textContent) return;
-        selected.push(cell);
-        cell.classList.add('selected');
-      }
-
-      function clearSelection() {
-        selected.forEach(c => c.classList.remove('selected'));
-        selected = [];
-      }
-
-      function mergeSelection() {
-        if (selected.length !== 2) return clearSelection();
-        const [c1, c2] = selected;
-        if (!areAdjacent(c1, c2) || c1.textContent !== c2.textContent) return clearSelection();
-        
-        const sum = parseInt(c1.textContent) + parseInt(c2.textContent);
-        c2.textContent = sum;
-        c2.style.background = getColorForNumber(sum);
-        c2.classList.add('pulse');
-        setTimeout(() => c2.classList.remove('pulse'), 300);
-        
-        c1.textContent = '';
-        c1.style.background = numberConnectContainer.classList.contains('dark') ? '#424242' : '#fff';
-        
-        const now = Date.now();
-        const combo = (now - lastMergeTime < 3000) ? 2 : 1;
-        lastMergeTime = now;
-        score += sum * combo;
-        updateScore();
-        clearSelection();
-        
-        setTimeout(() => {
-          dropAndFill();
-          if (!hasAvailableMoves()) {
-            gameMessage.textContent = "Fine partita! Nessuna mossa disponibile.";
-          }
-        }, 300);
-      }
-
-      function dropAndFill() {
-        for (let x = 0; x < cols; x++) {
-          let nums = [];
-          for (let y = rows - 1; y >= 0; y--) {
-            const cell = getCell(x, y);
-            if (cell.textContent) nums.push(cell.textContent);
-          }
-          for (let y = rows - 1; y >= 0; y--) {
-            const cell = getCell(x, y);
-            const val = nums.length > 0 ? nums.shift() : generateNumber();
-            cell.textContent = val;
-            cell.style.background = getColorForNumber(val);
-          }
-        }
-      }
-
-      function updateScore() {
-        scoreEl.textContent = score;
-      }
-
-      function hasAvailableMoves() {
-        for (let y = 0; y < rows; y++) {
-          for (let x = 0; x < cols; x++) {
-            const cell = getCell(x, y);
-            if (!cell.textContent) continue;
-            const val = cell.textContent;
-            const neighbors = [
-              getCell(x + 1, y), getCell(x - 1, y), getCell(x, y + 1), getCell(x, y - 1),
-              getCell(x + 1, y + 1), getCell(x + 1, y - 1), getCell(x - 1, y + 1), getCell(x - 1, y - 1)
-            ];
-            if (neighbors.some(n => n && n.textContent === val)) return true;
-          }
-        }
-        return false;
-      }
-
-      function saveGame() {
-        const gameState = {
-          score: score,
-          cells: cells.map(cell => ({
-            x: parseInt(cell.dataset.x),
-            y: parseInt(cell.dataset.y),
-            value: cell.textContent,
-            color: cell.style.background
-          })),
-          difficulty: difficultySelect.value
-        };
-        
-        const dataStr = JSON.stringify(gameState);
-        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-        const linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', `number-connect-${new Date().toISOString().slice(0,10)}.json`);
-        linkElement.click();
-        gameMessage.textContent = "Gioco salvato!";
-        setTimeout(() => gameMessage.textContent = "", 2000);
-      }
-
-      function loadGame() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        input.onchange = e => {
-          const file = e.target.files[0];
-          const reader = new FileReader();
-          reader.onload = function(event) {
-            try {
-              const gameState = JSON.parse(event.target.result);
-              score = gameState.score;
-              updateScore();
-              difficultySelect.value = gameState.difficulty;
-              grid.innerHTML = '';
-              cells = [];
-              selected = [];
-              colorMap = {};
-              
-              for (let y = 0; y < rows; y++) {
-                for (let x = 0; x < cols; x++) {
-                  const div = document.createElement('div');
-                  div.className = 'cell';
-                  div.dataset.x = x;
-                  div.dataset.y = y;
-                  
-                  const cellData = gameState.cells.find(c => c.x === x && c.y === y);
-                  if (cellData) {
-                    div.textContent = cellData.value;
-                    div.style.background = cellData.color;
-                  } else {
-                    const num = generateNumber();
-                    div.textContent = num;
-                    div.style.background = getColorForNumber(num);
-                  }
-                  grid.appendChild(div);
-                  cells.push(div);
+    <!-- Includiamo HLS.js per supportare stream HLS -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementi DOM
+            const videoPlayer = document.getElementById('video-player');
+            const streamUrlInput = document.getElementById('stream-url');
+            const streamTypeSelect = document.getElementById('stream-type');
+            const playBtn = document.getElementById('play-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const startMultiStreamBtn = document.getElementById('start-multi-stream');
+            const videoPlayBtn = document.getElementById('video-play');
+            const videoPauseBtn = document.getElementById('video-pause');
+            const videoStopBtn = document.getElementById('video-stop');
+            const volumeSlider = document.getElementById('volume-slider');
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const fitToPageBtn = document.getElementById('fit-to-page-btn');
+            const debugInfo = document.getElementById('debug-info');
+            const addChannelBtn = document.getElementById('add-channel');
+            const channelNameInput = document.getElementById('channel-name');
+            const channelList = document.getElementById('channel-list');
+            const searchChannelsInput = document.getElementById('search-channels');
+            const selectedChannelsDiv = document.getElementById('selected-channels');
+            const multiStreamContainer = document.getElementById('multi-stream-container');
+            const exitMultiStreamBtn = document.getElementById('exit-multi-stream');
+            const saveChannelsBtn = document.getElementById('save-channels');
+            const loadChannelsBtn = document.getElementById('load-channels');
+            const fileInput = document.getElementById('file-input');
+            
+            // Elementi per codec e statistiche
+            const videoCodecStatus = document.getElementById('video-codec-status');
+            const audioCodecStatus = document.getElementById('audio-codec-status');
+            const videoBitrateEl = document.getElementById('video-bitrate');
+            const audioBitrateEl = document.getElementById('audio-bitrate');
+            const videoResolutionEl = document.getElementById('video-resolution');
+            const bufferLevelEl = document.getElementById('buffer-level');
+            const videoBitrateBar = document.getElementById('video-bitrate-bar');
+            const audioBitrateBar = document.getElementById('audio-bitrate-bar');
+            const bufferBar = document.getElementById('buffer-bar');
+            
+            // Stato dell'applicazione
+            let currentStreamUrl = '';
+            let channels = JSON.parse(localStorage.getItem('streamingChannels')) || [];
+            let statsInterval;
+            let hlsPlayer = null;
+            let currentStreamType = 'auto';
+            let isFitToPage = false;
+            let selectedChannels = [];
+            let multiStreamHlsPlayers = [];
+            let currentLayout = '3x3';
+            
+            // Database di stream pubblici funzionanti
+            const publicStreams = [
+                {
+                    title: "NASA TV Public",
+                    url: "https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-Public/master.m3u8",
+                    category: "news",
+                    type: "hls",
+                    country: "US",
+                    language: "en",
+                    quality: "HD"
+                },
+                {
+                    title: "Deutsche Welle English",
+                    url: "https://dwstream3-lh.akamaihd.net/i/dwstream3_live@124409/master.m3u8",
+                    category: "news",
+                    type: "hls",
+                    country: "DE",
+                    language: "en",
+                    quality: "HD"
+                },
+                {
+                    title: "France 24 English",
+                    url: "https://f24hls-i.akamaihd.net/hls/live/221192/F24_EN_HI_HLS/master_2000.m3u8",
+                    category: "news",
+                    type: "hls",
+                    country: "FR",
+                    language: "en",
+                    quality: "HD"
+                },
+                {
+                    title: "Classic Rock Radio",
+                    url: "https://stream.classicrock.org/classicrock",
+                    category: "music",
+                    type: "direct",
+                    country: "US",
+                    language: "music",
+                    quality: "AUDIO"
+                },
+                {
+                    title: "Relaxing Ambient Music",
+                    url: "https://ambient-music.radioca.st/stream",
+                    category: "music",
+                    type: "direct",
+                    country: "INT",
+                    language: "music",
+                    quality: "AUDIO"
+                },
+                {
+                    title: "NASA Media Channel",
+                    url: "https://ntv2.akamaized.net/hls/live/2013923/NASA-NTV2-Public/master.m3u8",
+                    category: "education",
+                    type: "hls",
+                    country: "US",
+                    language: "en",
+                    quality: "HD"
                 }
-              }
-              gameMessage.textContent = "Gioco caricato!";
-              setTimeout(() => gameMessage.textContent = "", 2000);
-            } catch (error) {
-              gameMessage.textContent = "Errore nel caricamento!";
+            ];
+            
+            // Inizializzazione
+            function init() {
+                updateDebugInfo('Sistema inizializzato. Pronto per l\'analisi stream.');
+                renderChannelList();
+                setupEventListeners();
+                checkMediaCapabilities();
+                
+                // Aggiorna display canali selezionati
+                updateSelectedChannelsDisplay();
+                
+                // Aggiungi alcuni stream pubblici se la lista è vuota
+                if (channels.length === 0) {
+                    publicStreams.forEach(stream => {
+                        channels.push({
+                            id: Date.now() + Math.random(),
+                            name: stream.title,
+                            url: stream.url,
+                            type: stream.type,
+                            dateAdded: new Date().toLocaleDateString()
+                        });
+                    });
+                    saveChannels();
+                    renderChannelList();
+                }
             }
-          };
-          reader.readAsText(file);
-        };
-        input.click();
-      }
-
-      // EVENT LISTENERS PER IL GIOCO
-      grid.addEventListener('mousedown', e => {
-        e.preventDefault();
-        const cell = e.target.closest('.cell');
-        if (cell) {
-          if (!isSelecting) {
-            clearSelection();
-            isSelecting = true;
-            addToSelection(cell);
-          }
-        }
-      });
-
-      grid.addEventListener('mouseover', e => {
-        if (isSelecting) {
-          const cell = e.target.closest('.cell');
-          if (cell) addToSelection(cell);
-        }
-      });
-
-      grid.addEventListener('mouseup', e => {
-        if (isSelecting) {
-          const cell = e.target.closest('.cell');
-          if (cell && !selected.includes(cell)) addToSelection(cell);
-          mergeSelection();
-          isSelecting = false;
-        }
-      });
-
-      // TOUCH EVENTS PER MOBILE
-      grid.addEventListener('touchstart', e => {
-        e.preventDefault();
-        const cell = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-        if (cell && cell.classList.contains('cell')) {
-          clearSelection();
-          isSelecting = true;
-          addToSelection(cell);
-        }
-      });
-
-      grid.addEventListener('touchmove', e => {
-        if (isSelecting) {
-          e.preventDefault();
-          const cell = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-          if (cell && cell.classList.contains('cell')) {
-            addToSelection(cell);
-          }
-        }
-      });
-
-      grid.addEventListener('touchend', e => {
-        if (isSelecting) {
-          e.preventDefault();
-          const cell = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-          if (cell && cell.classList.contains('cell') && !selected.includes(cell)) {
-            addToSelection(cell);
-          }
-          mergeSelection();
-          isSelecting = false;
-        }
-      });
-
-      startBtn.addEventListener('click', createGrid);
-      saveBtn.addEventListener('click', saveGame);
-      loadBtn.addEventListener('click', loadGame);
-      
-      // INIZIALIZZA IL GIOCO
-      createGrid();
-    }
-
-    // FEED NOTIZIE COMPLETO
-    const feeds = {
-      "ANSA":"https://www.ansa.it/sito/ansait_rss.xml",
-      "Corriere della Sera":"https://xml2.corriereobjects.it/rss/homepage.xml",
-      "Repubblica":"https://www.repubblica.it/rss/homepage/rss2.0.xml",
-      "La Stampa":"https://www.lastampa.it/rss.xml",
-      "Il Sole 24 Ore":"https://www.ilsole24ore.com/rss/italia--1.xml",
-      "Il Messaggero":"https://www.ilmessaggero.it/rss/home.xml",
-      "Il Fatto Quotidiano":"https://www.ilfattoquotidiano.it/feed/",
-      "Il Giornale":"https://www.ilgiornale.it/rss.xml",
-      "Il Manifesto":"https://ilmanifesto.it/feed/",
-      "Avvenire":"https://www.avvenire.it/rss/avvenire_rss.xml",
-      "Libero Quotidiano":"https://www.liberoquotidiano.it/rss/home.xml",
-      "Il Foglio":"https://www.ilfoglio.it/rss.jsp",
-      "Affaritaliani":"https://www.affaritaliani.it/rss.xml",
-      "Adnkronos":"https://www.adnkronos.com/rss.xml",
-      "AGI":"https://www.agi.it/rss/ultime-notizie.xml",
-      "Rai News":"https://www.rainews.it/dl/rainews/RSS/cronaca.xml",
-      "Fanpage":"https://www.fanpage.it/feed/",
-      "La Gazzetta dello Sport":"https://www.gazzetta.it/rss/home.xml",
-      "Tuttosport":"https://www.tuttosport.com/rss",
-      "Sky TG24":"https://tg24.sky.it/rss/tg24.xml",
-      "Quotidiano Nazionale":"https://www.quotidiano.net/rss",
-      "Il Mattino":"https://www.ilmattino.it/rss/home.xml",
-      "Il Secolo XIX":"https://www.ilsecoloxix.it/rss.xml",
-      "La Nazione":"https://www.lanazione.it/rss",
-      "Il Resto del Carlino":"https://www.ilrestodelcarlino.it/rss",
-      "BBC News":"http://feeds.bbci.co.uk/news/rss.xml",
-      "The Guardian":"https://www.theguardian.com/world/rss",
-      "The Times":"https://www.thetimes.co.uk/environment/rss",
-      "Financial Times":"https://www.ft.com/?format=rss",
-      "Sky News":"https://feeds.skynews.com/feeds/rss/home.xml",
-      "CNN":"http://rss.cnn.com/rss/edition.rss",
-      "New York Times":"https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
-      "Washington Post":"https://feeds.washingtonpost.com/rss/world",
-      "Wall Street Journal":"https://feeds.a.dj.com/rss/RSSWorldNews.xml",
-      "Los Angeles Times":"https://www.latimes.com/world-nation/rss2.0.xml",
-      "Bloomberg":"https://www.bloomberg.com/feed/podcast/etf-report.xml",
-      "Forbes":"https://www.forbes.com/most-popular/feed/",
-      "Politico":"https://www.politico.com/rss/politics08.xml",
-      "NBC News":"https://feeds.nbcnews.com/nbcnews/public/news",
-      "CBS News":"https://www.cbsnews.com/latest/rss/main",
-      "Le Monde":"https://www.lemonde.fr/rss/une.xml",
-      "Le Figaro":"https://www.lefigaro.fr/rss/figaro_actualites.xml",
-      "El Mundo":"https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml",
-      "Der Spiegel":"https://www.spiegel.de/international/index.rss",
-      "Die Zeit":"https://newsfeed.zeit.de/index",
-      "Deutsche Welle":"https://rss.dw.com/rdf/rss-en-all",
-      "Handelsblatt":"https://www.handelsblatt.com/contentexport/feed/schlagzeilen",
-      "Al Jazeera":"https://www.aljazeera.com/xml/rss/all.xml",
-      "The Hindu":"https://www.thehindu.com/feeder/default.rss",
-      "Times of India":"https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms"
-    };
-
-    async function loadNews() {
-      newsContainer.innerHTML = "<p style='text-align:center;font-size:0.9em;margin:8px 0;'>Caricamento notizie in corso...</p>";
-      
-      let loadedCount = 0;
-      const totalFeeds = Object.keys(feeds).length;
-      
-      for (const [fonte, url] of Object.entries(feeds)) {
-        try {
-          const section = document.createElement("div");
-          section.className = "news-section";
-          section.innerHTML = `<h3>${fonte}</h3><ul></ul>`;
-          newsContainer.appendChild(section);
-          
-          const res = await fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(url));
-          const data = await res.json();
-          const doc = new DOMParser().parseFromString(data.contents, "text/xml");
-          const items = doc.querySelectorAll("item");
-          
-          const ul = section.querySelector("ul");
-          items.forEach((item, i) => {
-            if (i < 3) {
-              const title = item.querySelector("title")?.textContent || "Titolo non disponibile";
-              const link = item.querySelector("link")?.textContent || "#";
-              const li = document.createElement("li");
-              li.innerHTML = `<a href="${link}" target="_blank">${title}</a>`;
-              ul.appendChild(li);
+            
+            // Setup degli event listeners
+            function setupEventListeners() {
+                playBtn.addEventListener('click', playStream);
+                stopBtn.addEventListener('click', stopStream);
+                analyzeBtn.addEventListener('click', analyzeStream);
+                startMultiStreamBtn.addEventListener('click', startMultiStream);
+                exitMultiStreamBtn.addEventListener('click', exitMultiStream);
+                videoPlayBtn.addEventListener('click', () => videoPlayer.play());
+                videoPauseBtn.addEventListener('click', () => videoPlayer.pause());
+                videoStopBtn.addEventListener('click', stopStream);
+                volumeSlider.addEventListener('input', setVolume);
+                fullscreenBtn.addEventListener('click', toggleFullscreen);
+                fitToPageBtn.addEventListener('click', toggleFitToPage);
+                addChannelBtn.addEventListener('click', addChannel);
+                searchChannelsInput.addEventListener('input', searchChannels);
+                streamTypeSelect.addEventListener('change', handleStreamTypeChange);
+                saveChannelsBtn.addEventListener('click', saveChannelsToFile);
+                loadChannelsBtn.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', loadChannelsFromFile);
+                
+                // Layout controls
+                document.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('layout-btn')) {
+                        const layout = e.target.dataset.layout;
+                        changeLayout(layout, e.target);
+                    }
+                });
+                
+                // Eventi del video player
+                videoPlayer.addEventListener('loadstart', handleLoadStart);
+                videoPlayer.addEventListener('loadedmetadata', handleMetadataLoaded);
+                videoPlayer.addEventListener('canplay', handleCanPlay);
+                videoPlayer.addEventListener('playing', handlePlaying);
+                videoPlayer.addEventListener('waiting', handleWaiting);
+                videoPlayer.addEventListener('seeking', handleSeeking);
+                videoPlayer.addEventListener('seeked', handleSeeked);
+                videoPlayer.addEventListener('ended', handleEnded);
+                videoPlayer.addEventListener('error', handleVideoError);
+                videoPlayer.addEventListener('volumechange', updateVolumeDisplay);
+                videoPlayer.addEventListener('progress', handleProgress);
+                videoPlayer.addEventListener('timeupdate', handleTimeUpdate);
+                
+                // Imposta il volume iniziale
+                videoPlayer.volume = volumeSlider.value / 100;
             }
-          });
-          
-          loadedCount++;
-          newsContainer.querySelector('p').textContent = `Caricamento notizie... (${loadedCount}/${totalFeeds})`;
-          
-        } catch {
-          // Continua con le prossime testate anche se una fallisce
-        }
-      }
-      
-      newsContainer.querySelector('p').textContent = `Caricamento completato! ${loadedCount} testate caricate`;
-      setTimeout(() => {
-        if (newsContainer.querySelector('p')) {
-          newsContainer.querySelector('p').remove();
-        }
-      }, 3000);
-    }
-  </script>
+            
+            // Salva lista canali su file TXT
+            function saveChannelsToFile() {
+                if (channels.length === 0) {
+                    updateDebugInfo('Nessun canale da salvare', 'warning');
+                    return;
+                }
+                
+                // Crea il contenuto del file
+                let fileContent = "# Lista Canali Streaming\n";
+                fileContent += "# Formato: Nome|URL|Tipo\n\n";
+                
+                channels.forEach(channel => {
+                    fileContent += `${channel.name}|${channel.url}|${channel.type}\n`;
+                });
+                
+                // Crea e scarica il file
+                const blob = new Blob([fileContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'lista_canali_streaming.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                updateDebugInfo(`Lista canali salvata (${channels.length} canali)`);
+            }
+            
+            // Carica lista canali da file TXT
+            function loadChannelsFromFile(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const content = e.target.result;
+                        const lines = content.split('\n');
+                        const newChannels = [];
+                        
+                        lines.forEach(line => {
+                            // Salta linee vuote e commenti
+                            if (!line.trim() || line.startsWith('#')) return;
+                            
+                            const parts = line.split('|');
+                            if (parts.length >= 3) {
+                                const name = parts[0].trim();
+                                const url = parts[1].trim();
+                                const type = parts[2].trim();
+                                
+                                if (name && url) {
+                                    newChannels.push({
+                                        id: Date.now() + Math.random(),
+                                        name: name,
+                                        url: url,
+                                        type: type,
+                                        dateAdded: new Date().toLocaleDateString()
+                                    });
+                                }
+                            }
+                        });
+                        
+                        if (newChannels.length > 0) {
+                            channels = newChannels;
+                            saveChannels();
+                            renderChannelList();
+                            updateDebugInfo(`Caricati ${newChannels.length} canali dal file`);
+                        } else {
+                            updateDebugInfo('Nessun canale valido trovato nel file', 'warning');
+                        }
+                    } catch (error) {
+                        updateDebugInfo(`Errore nel caricamento del file: ${error.message}`, 'error');
+                    }
+                    
+                    // Reset del file input
+                    fileInput.value = '';
+                };
+                
+                reader.readAsText(file);
+            }
+            
+            // Cambia layout multi-stream
+            function changeLayout(layout, button) {
+                document.querySelectorAll('.layout-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentLayout = layout;
+                
+                switch(layout) {
+                    case '3x3':
+                        multiStreamContainer.style.gridTemplateColumns = 'repeat(3, 1fr)';
+                        multiStreamContainer.style.gridTemplateRows = 'repeat(3, 1fr)';
+                        break;
+                    case '2x2':
+                        multiStreamContainer.style.gridTemplateColumns = 'repeat(2, 1fr)';
+                        multiStreamContainer.style.gridTemplateRows = 'repeat(2, 1fr)';
+                        break;
+                    case '1x1':
+                        multiStreamContainer.style.gridTemplateColumns = '1fr';
+                        multiStreamContainer.style.gridTemplateRows = '1fr';
+                        break;
+                    case 'fit-all':
+                        document.querySelectorAll('.multi-stream-item').forEach(item => {
+                            item.classList.add('fit-to-screen');
+                        });
+                        break;
+                    case 'mute-all':
+                        document.querySelectorAll('.multi-stream-video').forEach(video => {
+                            video.muted = true;
+                        });
+                        updateAudioIndicators();
+                        break;
+                }
+                
+                updateDebugInfo(`Layout multi-stream cambiato: ${layout}`);
+            }
+            
+            // Seleziona/deseleziona canale per multi-stream
+            function toggleChannelSelection(channel) {
+                const index = selectedChannels.findIndex(c => c.id === channel.id);
+                
+                if (index === -1) {
+                    if (selectedChannels.length < 9) {
+                        selectedChannels.push(channel);
+                        updateDebugInfo(`Canale "${channel.name}" aggiunto alla selezione multi-stream`);
+                    } else {
+                        updateDebugInfo('Massimo 9 canali consentiti per il multi-stream', 'warning');
+                        return;
+                    }
+                } else {
+                    selectedChannels.splice(index, 1);
+                    updateDebugInfo(`Canale "${channel.name}" rimosso dalla selezione multi-stream`);
+                }
+                
+                updateSelectedChannelsDisplay();
+                renderChannelList();
+            }
+            
+            // Aggiorna display canali selezionati
+            function updateSelectedChannelsDisplay() {
+                selectedChannelsDiv.innerHTML = '';
+                
+                if (selectedChannels.length === 0) {
+                    selectedChannelsDiv.innerHTML = '<div style="color: #7f8c8d; text-align: center; grid-column: 1 / -1;">Nessun canale selezionato</div>';
+                    startMultiStreamBtn.disabled = true;
+                    startMultiStreamBtn.textContent = 'Avvia Multi-Stream (0/9)';
+                    return;
+                }
+                
+                selectedChannels.forEach((channel, index) => {
+                    const channelEl = document.createElement('div');
+                    channelEl.className = 'selection-item selected';
+                    channelEl.textContent = channel.name;
+                    channelEl.title = channel.name;
+                    
+                    channelEl.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        selectedChannels.splice(index, 1);
+                        updateSelectedChannelsDisplay();
+                        renderChannelList();
+                        updateDebugInfo(`Canale rimosso dalla selezione multi-stream`);
+                    });
+                    
+                    selectedChannelsDiv.appendChild(channelEl);
+                });
+                
+                // Riempie gli slot vuoti
+                const emptySlots = 9 - selectedChannels.length;
+                for (let i = 0; i < emptySlots; i++) {
+                    const emptyEl = document.createElement('div');
+                    emptyEl.className = 'selection-item';
+                    emptyEl.textContent = `Slot ${i + 1 + selectedChannels.length}`;
+                    emptyEl.style.color = '#7f8c8d';
+                    emptyEl.style.cursor = 'default';
+                    selectedChannelsDiv.appendChild(emptyEl);
+                }
+                
+                startMultiStreamBtn.disabled = selectedChannels.length === 0;
+                startMultiStreamBtn.textContent = `Avvia Multi-Stream (${selectedChannels.length}/9)`;
+            }
+            
+            // Avvia modalità multi-stream
+            function startMultiStream() {
+                if (selectedChannels.length === 0) {
+                    updateDebugInfo('Seleziona almeno un canale per il multi-stream', 'warning');
+                    return;
+                }
+                
+                updateDebugInfo(`Avvio modalità Multi-Stream con ${selectedChannels.length} canali`);
+                
+                // Prepara il container multi-stream
+                multiStreamContainer.innerHTML = '';
+                multiStreamContainer.appendChild(exitMultiStreamBtn);
+                
+                // Ricrea i controlli layout
+                const layoutControls = document.createElement('div');
+                layoutControls.className = 'multi-stream-layout-controls';
+                layoutControls.innerHTML = `
+                    <button class="layout-btn active" data-layout="3x3">3×3</button>
+                    <button class="layout-btn" data-layout="2x2">2×2</button>
+                    <button class="layout-btn" data-layout="1x1">1×1</button>
+                    <button class="layout-btn" data-layout="fit-all">Fit All</button>
+                    <button class="layout-btn" data-layout="mute-all">Muta Tutti</button>
+                `;
+                multiStreamContainer.appendChild(layoutControls);
+                
+                // Crea i video elements per ogni canale
+                selectedChannels.forEach((channel, index) => {
+                    const streamItem = document.createElement('div');
+                    streamItem.className = 'multi-stream-item';
+                    streamItem.innerHTML = `
+                        <div class="multi-stream-overlay">${channel.name}</div>
+                        <div class="stream-status status-buffering">BUFFERING</div>
+                        <div class="stream-audio-indicator audio-off">MUTO</div>
+                        <video class="multi-stream-video" id="multi-video-${index}" muted></video>
+                        <div class="multi-stream-controls">
+                            <button class="multi-stream-btn" data-action="play">▶</button>
+                            <button class="multi-stream-btn" data-action="pause">⏸</button>
+                            <button class="multi-stream-btn" data-action="volume">🔇</button>
+                            <button class="multi-stream-btn" data-action="fit">📐</button>
+                            <button class="multi-stream-btn warning" data-action="restart">🔄</button>
+                        </div>
+                    `;
+                    
+                    multiStreamContainer.appendChild(streamItem);
+                    
+                    // Setup controlli per ogni video
+                    setupStreamControls(streamItem, index, channel);
+                });
+                
+                // Mostra il container multi-stream
+                multiStreamContainer.style.display = 'grid';
+                document.body.style.overflow = 'hidden';
+                
+                // Avvia tutti gli stream
+                startAllMultiStreams();
+            }
+            
+            // Setup controlli per ogni stream
+            function setupStreamControls(streamItem, index, channel) {
+                const video = streamItem.querySelector('video');
+                const controls = streamItem.querySelector('.multi-stream-controls');
+                const statusIndicator = streamItem.querySelector('.stream-status');
+                const audioIndicator = streamItem.querySelector('.stream-audio-indicator');
+                
+                // Play/Pause
+                controls.querySelector('[data-action="play"]').addEventListener('click', () => {
+                    video.play();
+                    statusIndicator.textContent = 'LIVE';
+                    statusIndicator.className = 'stream-status status-live';
+                });
+                
+                controls.querySelector('[data-action="pause"]').addEventListener('click', () => {
+                    video.pause();
+                    statusIndicator.textContent = 'PAUSA';
+                    statusIndicator.className = 'stream-status status-buffering';
+                });
+                
+                // Volume
+                controls.querySelector('[data-action="volume"]').addEventListener('click', function() {
+                    video.muted = !video.muted;
+                    this.textContent = video.muted ? '🔇' : '🔊';
+                    audioIndicator.textContent = video.muted ? 'MUTO' : 'AUDIO';
+                    audioIndicator.className = `stream-audio-indicator ${video.muted ? 'audio-off' : 'audio-on'}`;
+                });
+                
+                // Fit to screen
+                controls.querySelector('[data-action="fit"]').addEventListener('click', function() {
+                    streamItem.classList.toggle('fit-to-screen');
+                    this.classList.toggle('active');
+                    this.textContent = streamItem.classList.contains('fit-to-screen') ? '📏' : '📐';
+                });
+                
+                // Restart stream
+                controls.querySelector('[data-action="restart"]').addEventListener('click', () => {
+                    restartStream(index, channel, video, statusIndicator);
+                });
+                
+                // Eventi video per aggiornare lo status
+                video.addEventListener('playing', () => {
+                    statusIndicator.textContent = 'LIVE';
+                    statusIndicator.className = 'stream-status status-live';
+                });
+                
+                video.addEventListener('waiting', () => {
+                    statusIndicator.textContent = 'BUFFERING';
+                    statusIndicator.className = 'stream-status status-buffering';
+                });
+                
+                video.addEventListener('error', () => {
+                    statusIndicator.textContent = 'ERROR';
+                    statusIndicator.className = 'stream-status status-error';
+                });
+            }
+            
+            // Riavvia uno stream
+            function restartStream(index, channel, video, statusIndicator) {
+                statusIndicator.textContent = 'RIAVVIO';
+                statusIndicator.className = 'stream-status status-buffering';
+                
+                // Ferma il player HLS esistente
+                if (multiStreamHlsPlayers[index]) {
+                    multiStreamHlsPlayers[index].destroy();
+                }
+                
+                // Riproduci di nuovo
+                setTimeout(() => {
+                    if (channel.type === 'hls' && Hls.isSupported()) {
+                        const hls = new Hls({
+                            enableWorker: false,
+                            lowLatencyMode: true,
+                            backBufferLength: 90
+                        });
+                        
+                        hls.loadSource(channel.url);
+                        hls.attachMedia(video);
+                        
+                        hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                            video.play().catch(console.error);
+                        });
+                        
+                        multiStreamHlsPlayers[index] = hls;
+                    } else {
+                        video.src = channel.url;
+                        video.play().catch(console.error);
+                    }
+                }, 500);
+            }
+            
+            // Aggiorna indicatori audio
+            function updateAudioIndicators() {
+                document.querySelectorAll('.multi-stream-video').forEach((video, index) => {
+                    const audioIndicator = document.querySelector(`#multi-video-${index}`).closest('.multi-stream-item').querySelector('.stream-audio-indicator');
+                    const volumeBtn = document.querySelector(`#multi-video-${index}`).closest('.multi-stream-item').querySelector('[data-action="volume"]');
+                    
+                    if (audioIndicator && volumeBtn) {
+                        audioIndicator.textContent = video.muted ? 'MUTO' : 'AUDIO';
+                        audioIndicator.className = `stream-audio-indicator ${video.muted ? 'audio-off' : 'audio-on'}`;
+                        volumeBtn.textContent = video.muted ? '🔇' : '🔊';
+                    }
+                });
+            }
+            
+            // Avvia tutti gli stream multi
+            function startAllMultiStreams() {
+                // Ferma eventuali player HLS precedenti
+                multiStreamHlsPlayers.forEach(player => {
+                    if (player) player.destroy();
+                });
+                multiStreamHlsPlayers = [];
+                
+                selectedChannels.forEach((channel, index) => {
+                    const videoElement = document.getElementById(`multi-video-${index}`);
+                    
+                    if (!videoElement) return;
+                    
+                    if (channel.type === 'hls' && Hls.isSupported()) {
+                        const hls = new Hls({
+                            enableWorker: false,
+                            lowLatencyMode: true,
+                            backBufferLength: 90
+                        });
+                        
+                        hls.loadSource(channel.url);
+                        hls.attachMedia(videoElement);
+                        
+                        hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                            videoElement.play().catch(e => {
+                                console.log(`Errore riproduzione canale ${index}:`, e);
+                            });
+                        });
+                        
+                        hls.on(Hls.Events.ERROR, function(event, data) {
+                            if (data.fatal) {
+                                console.log(`Errore HLS canale ${index}:`, data.details);
+                            }
+                        });
+                        
+                        multiStreamHlsPlayers.push(hls);
+                    } else {
+                        // Stream diretto
+                        videoElement.src = channel.url;
+                        videoElement.play().catch(e => {
+                            console.log(`Errore riproduzione canale ${index}:`, e);
+                        });
+                        multiStreamHlsPlayers.push(null);
+                    }
+                });
+                
+                updateDebugInfo(`Multi-Stream avviato con ${selectedChannels.length} stream`);
+            }
+            
+            // Esci dalla modalità multi-stream
+            function exitMultiStream() {
+                // Ferma tutti i player HLS
+                multiStreamHlsPlayers.forEach(player => {
+                    if (player) player.destroy();
+                });
+                multiStreamHlsPlayers = [];
+                
+                // Nascondi il container multi-stream
+                multiStreamContainer.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                
+                updateDebugInfo('Modalità Multi-Stream terminata');
+            }
+            
+            // Gestione cambio tipo stream
+            function handleStreamTypeChange() {
+                currentStreamType = streamTypeSelect.value;
+                updateDebugInfo(`Tipo stream impostato su: ${currentStreamType}`);
+            }
+            
+            // Riproduci lo stream
+            function playStream() {
+                const url = streamUrlInput.value.trim();
+                if (!url) {
+                    updateDebugInfo('Errore: Inserisci un URL valido', 'error');
+                    return;
+                }
+                
+                currentStreamUrl = url;
+                stopStream(); // Ferma stream precedente
+                
+                // Determina il tipo di stream
+                const streamType = detectStreamType(url);
+                updateDebugInfo(`Tipo stream rilevato: ${streamType}`);
+                
+                if (streamType === 'hls' && Hls.isSupported()) {
+                    playHlsStream(url);
+                } else {
+                    playDirectStream(url);
+                }
+            }
+            
+            // Rileva il tipo di stream dall'URL
+            function detectStreamType(url) {
+                if (currentStreamType !== 'auto') {
+                    return currentStreamType;
+                }
+                
+                const urlLower = url.toLowerCase();
+                if (urlLower.includes('.m3u8')) return 'hls';
+                if (urlLower.includes('.mp4')) return 'mp4';
+                if (urlLower.includes('.webm')) return 'webm';
+                return 'direct';
+            }
+            
+            // Riproduci stream HLS
+            function playHlsStream(url) {
+                if (hlsPlayer) {
+                    hlsPlayer.destroy();
+                }
+                
+                hlsPlayer = new Hls({
+                    enableWorker: false,
+                    lowLatencyMode: true,
+                    backBufferLength: 90
+                });
+                
+                hlsPlayer.loadSource(url);
+                hlsPlayer.attachMedia(videoPlayer);
+                
+                hlsPlayer.on(Hls.Events.MANIFEST_PARSED, function() {
+                    updateDebugInfo('Manifest HLS parsato. Avvio riproduzione...');
+                    videoPlayer.play().catch(e => {
+                        updateDebugInfo(`Errore riproduzione: ${e.message}`, 'error');
+                    });
+                });
+                
+                hlsPlayer.on(Hls.Events.ERROR, function(event, data) {
+                    if (data.fatal) {
+                        updateDebugInfo(`Errore HLS: ${data.details}`, 'error');
+                    }
+                });
+            }
+            
+            // Riproduci stream diretto
+            function playDirectStream(url) {
+                videoPlayer.src = url;
+                videoPlayer.load();
+                
+                videoPlayer.play().then(() => {
+                    updateDebugInfo('Riproduzione avviata con successo');
+                }).catch(error => {
+                    updateDebugInfo(`Errore durante la riproduzione: ${error.message}`, 'error');
+                });
+            }
+            
+            // Analizza lo stream
+            function analyzeStream() {
+                if (!videoPlayer.src && !currentStreamUrl) {
+                    updateDebugInfo('Errore: Avvia prima uno stream per analizzarlo', 'error');
+                    return;
+                }
+                
+                updateDebugInfo('Analisi stream in corso...');
+                
+                analyzeVideoCapabilities();
+                analyzeCodecs();
+            }
+            
+            // Analizza le capacità video
+            function analyzeVideoCapabilities() {
+                if (!videoPlayer.videoWidth) {
+                    updateDebugInfo('Impossibile analizzare: video non caricato', 'warning');
+                    return;
+                }
+                
+                const width = videoPlayer.videoWidth;
+                const height = videoPlayer.videoHeight;
+                const aspectRatio = (width / height).toFixed(2);
+                
+                updateDebugInfo(`Risoluzione: ${width}x${height} (${aspectRatio}:1)`);
+                updateDebugInfo(`Durata: ${formatTime(videoPlayer.duration)}`);
+                
+                videoResolutionEl.textContent = `${width}x${height}`;
+            }
+            
+            // Analizza i codec
+            function analyzeCodecs() {
+                if (videoPlayer.canPlayType) {
+                    const videoCodecs = [
+                        { codec: 'H.264', type: 'video/mp4; codecs="avc1.42E01E"' },
+                        { codec: 'VP9', type: 'video/webm; codecs="vp9"' }
+                    ];
+                    
+                    const audioCodecs = [
+                        { codec: 'AAC', type: 'audio/mp4; codecs="mp4a.40.2"' },
+                        { codec: 'MP3', type: 'audio/mpeg; codecs="mp3"' }
+                    ];
+                    
+                    let videoDetected = false;
+                    let audioDetected = false;
+                    
+                    videoCodecs.forEach(item => {
+                        const canPlay = videoPlayer.canPlayType(item.type);
+                        if (canPlay && !videoDetected) {
+                            videoCodecStatus.textContent = item.codec;
+                            videoCodecStatus.className = 'codec-status supported';
+                            videoDetected = true;
+                        }
+                    });
+                    
+                    audioCodecs.forEach(item => {
+                        const canPlay = videoPlayer.canPlayType(item.type);
+                        if (canPlay && !audioDetected) {
+                            audioCodecStatus.textContent = item.codec;
+                            audioCodecStatus.className = 'codec-status supported';
+                            audioDetected = true;
+                        }
+                    });
+                }
+            }
+            
+            // Attiva/disattiva fit to page
+            function toggleFitToPage() {
+                isFitToPage = !isFitToPage;
+                
+                if (isFitToPage) {
+                    videoPlayer.classList.add('fit-to-page');
+                    fitToPageBtn.classList.add('active');
+                    fitToPageBtn.textContent = 'Fit to Page ✓';
+                    updateDebugInfo('Modalità Fit to Page attivata');
+                } else {
+                    videoPlayer.classList.remove('fit-to-page');
+                    fitToPageBtn.classList.remove('active');
+                    fitToPageBtn.textContent = 'Fit to Page';
+                    updateDebugInfo('Modalità Fit to Page disattivata');
+                }
+            }
+            
+            // Ferma lo stream
+            function stopStream() {
+                if (hlsPlayer) {
+                    hlsPlayer.destroy();
+                    hlsPlayer = null;
+                }
+                
+                videoPlayer.pause();
+                videoPlayer.src = '';
+                videoPlayer.load();
+                
+                updateDebugInfo('Stream fermato');
+                stopStatsCollection();
+                resetStats();
+                
+                // Reset codec display
+                videoCodecStatus.textContent = 'Analizza per rilevare';
+                videoCodecStatus.className = 'codec-status unknown';
+                audioCodecStatus.textContent = 'Analizza per rilevare';
+                audioCodecStatus.className = 'codec-status unknown';
+            }
+            
+            // Controlla le capacità multimediali del browser
+            function checkMediaCapabilities() {
+                updateDebugInfo('Browser capabilities:');
+                updateDebugInfo(`  HLS supportato: ${Hls.isSupported() ? 'Sì' : 'No'}`);
+                updateDebugInfo(`  MediaSource API: ${!!window.MediaSource ? 'Sì' : 'No'}`);
+            }
+            
+            // Gestione eventi video
+            function handleLoadStart() {
+                updateDebugInfo('Caricamento stream iniziato...', 'info');
+            }
+            
+            function handleMetadataLoaded() {
+                const width = videoPlayer.videoWidth;
+                const height = videoPlayer.videoHeight;
+                videoResolutionEl.textContent = `${width}x${height}`;
+                
+                updateDebugInfo(`Metadati caricati: ${width}x${height}`, 'info');
+                startStatsCollection();
+            }
+            
+            function handleCanPlay() {
+                updateDebugInfo('Stream pronto per la riproduzione', 'info');
+            }
+            
+            function handlePlaying() {
+                updateDebugInfo('Riproduzione avviata', 'info');
+            }
+            
+            function handleWaiting() {
+                updateDebugInfo('Buffering...', 'warning');
+            }
+            
+            function handleSeeking() {
+                updateDebugInfo('Seek in corso...', 'info');
+            }
+            
+            function handleSeeked() {
+                updateDebugInfo('Seek completato', 'info');
+            }
+            
+            function handleEnded() {
+                updateDebugInfo('Stream terminato', 'info');
+                stopStatsCollection();
+            }
+            
+            function handleProgress() {
+                if (videoPlayer.buffered.length > 0) {
+                    const bufferedEnd = videoPlayer.buffered.end(videoPlayer.buffered.length - 1);
+                    const currentTime = videoPlayer.currentTime;
+                    const bufferedTime = bufferedEnd - currentTime;
+                    
+                    bufferLevelEl.textContent = `${bufferedTime.toFixed(1)}s`;
+                    bufferBar.style.width = Math.min((bufferedTime / 30) * 100, 100) + '%';
+                }
+            }
+            
+            function handleTimeUpdate() {
+                updateBitrateInfo();
+            }
+            
+            // Gestione errori video
+            function handleVideoError(e) {
+                let message = 'Errore sconosciuto nel video';
+                
+                switch(videoPlayer.error?.code) {
+                    case 1:
+                        message = 'ERRORE: Interruzione acquisizione';
+                        break;
+                    case 2:
+                        message = 'ERRORE: Decodifica impossibile';
+                        break;
+                    case 3:
+                        message = 'ERRORE: Formato non supportato';
+                        break;
+                    case 4:
+                        message = 'ERRORE: Codec non supportato';
+                        break;
+                }
+                
+                updateDebugInfo(`${message}`, 'error');
+            }
+            
+            // Aggiorna informazioni sul bitrate
+            function updateBitrateInfo() {
+                if (hlsPlayer && hlsPlayer.levels && hlsPlayer.currentLevel !== -1) {
+                    const level = hlsPlayer.levels[hlsPlayer.currentLevel];
+                    if (level && level.bitrate) {
+                        const bitrate = Math.round(level.bitrate / 1000);
+                        videoBitrateEl.textContent = `${bitrate} kbps`;
+                        videoBitrateBar.style.width = Math.min(bitrate / 10000 * 100, 100) + '%';
+                    }
+                }
+            }
+            
+            // Avvia la raccolta delle statistiche
+            function startStatsCollection() {
+                stopStatsCollection();
+                
+                statsInterval = setInterval(() => {
+                    updateBitrateInfo();
+                }, 1000);
+            }
+            
+            // Ferma la raccolta delle statistiche
+            function stopStatsCollection() {
+                if (statsInterval) {
+                    clearInterval(statsInterval);
+                }
+            }
+            
+            // Resetta le statistiche
+            function resetStats() {
+                videoBitrateEl.textContent = '0 kbps';
+                audioBitrateEl.textContent = '0 kbps';
+                videoResolutionEl.textContent = '0x0';
+                bufferLevelEl.textContent = '0s';
+                
+                videoBitrateBar.style.width = '0%';
+                audioBitrateBar.style.width = '0%';
+                bufferBar.style.width = '0%';
+            }
+            
+            // Imposta il volume
+            function setVolume() {
+                videoPlayer.volume = volumeSlider.value / 100;
+            }
+            
+            // Aggiorna la visualizzazione del volume
+            function updateVolumeDisplay() {
+                volumeSlider.value = videoPlayer.volume * 100;
+            }
+            
+            // Attiva/disattiva schermo intero
+            function toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    videoPlayer.requestFullscreen().catch(err => {
+                        updateDebugInfo(`Errore schermo intero: ${err.message}`, 'error');
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+            
+            // Aggiungi un canale alla lista
+            function addChannel() {
+                const name = channelNameInput.value.trim();
+                const url = streamUrlInput.value.trim();
+                
+                if (!name || !url) {
+                    updateDebugInfo('Errore: Inserisci sia nome che URL del canale', 'error');
+                    return;
+                }
+                
+                const streamType = detectStreamType(url);
+                
+                const channel = {
+                    id: Date.now(),
+                    name: name,
+                    url: url,
+                    type: streamType,
+                    dateAdded: new Date().toLocaleDateString()
+                };
+                
+                channels.push(channel);
+                saveChannels();
+                renderChannelList();
+                
+                channelNameInput.value = '';
+                updateDebugInfo(`Canale "${name}" aggiunto alla lista`);
+            }
+            
+            // Salva i canali nel localStorage
+            function saveChannels() {
+                localStorage.setItem('streamingChannels', JSON.stringify(channels));
+            }
+            
+            // Renderizza la lista dei canali
+            function renderChannelList(filteredChannels = null) {
+                const channelsToRender = filteredChannels || channels;
+                
+                channelList.innerHTML = '';
+                
+                if (channelsToRender.length === 0) {
+                    channelList.innerHTML = '<div class="channel-item">Nessun canale salvato</div>';
+                    return;
+                }
+                
+                channelsToRender.forEach(channel => {
+                    const channelElement = document.createElement('div');
+                    channelElement.className = 'channel-item';
+                    
+                    const isSelected = selectedChannels.some(c => c.id === channel.id);
+                    if (isSelected) {
+                        channelElement.classList.add('selected');
+                    }
+                    
+                    channelElement.innerHTML = `
+                        <div>
+                            <div style="font-weight: bold;">${channel.name}</div>
+                            <div class="channel-info">
+                                ${channel.type.toUpperCase()}
+                                <span class="stream-type-badge">${channel.type}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary btn-small" data-id="${channel.id}">Carica</button>
+                            <button class="btn ${isSelected ? 'btn-danger' : 'btn-success'} btn-small" data-id="${channel.id}" data-action="select">
+                                ${isSelected ? '✕' : '+'}
+                            </button>
+                        </div>
+                    `;
+                    
+                    channelElement.querySelector('[data-id].btn-primary').addEventListener('click', () => {
+                        loadChannel(channel);
+                    });
+                    
+                    channelElement.querySelector('[data-action="select"]').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        toggleChannelSelection(channel);
+                    });
+                    
+                    channelList.appendChild(channelElement);
+                });
+            }
+            
+            // Carica un canale
+            function loadChannel(channel) {
+                streamUrlInput.value = channel.url;
+                streamTypeSelect.value = channel.type;
+                currentStreamType = channel.type;
+                
+                updateDebugInfo(`Canale "${channel.name}" caricato. Clicca Play per avviare.`);
+            }
+            
+            // Cerca nei canali
+            function searchChannels() {
+                const searchTerm = searchChannelsInput.value.toLowerCase();
+                
+                if (!searchTerm) {
+                    renderChannelList();
+                    return;
+                }
+                
+                const filteredChannels = channels.filter(channel => 
+                    channel.name.toLowerCase().includes(searchTerm) || 
+                    channel.url.toLowerCase().includes(searchTerm)
+                );
+                
+                renderChannelList(filteredChannels);
+            }
+            
+            // Formatta il tempo in minuti:secondi
+            function formatTime(seconds) {
+                if (!seconds || !isFinite(seconds)) return '0:00';
+                
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            }
+            
+            // Aggiorna il pannello di debug
+            function updateDebugInfo(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                let indicator = '';
+                
+                if (type === 'error') {
+                    indicator = '<span class="status-indicator status-error"></span>';
+                } else if (type === 'warning') {
+                    indicator = '<span class="status-indicator status-warning"></span>';
+                } else {
+                    indicator = '<span class="status-indicator status-info"></span>';
+                }
+                
+                const newEntry = document.createElement('div');
+                newEntry.innerHTML = `${indicator} [${timestamp}] ${message}`;
+                
+                debugInfo.appendChild(newEntry);
+                debugInfo.scrollTop = debugInfo.scrollHeight;
+                
+                // Mantieni solo le ultime 20 righe
+                while (debugInfo.children.length > 20) {
+                    debugInfo.removeChild(debugInfo.firstChild);
+                }
+            }
+            
+            // Inizializza l'applicazione
+            init();
+        });
+    </script>
 </body>
 </html>
